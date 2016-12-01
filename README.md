@@ -26,12 +26,12 @@ node <mocha_path> <bedrock_audit_src> --config=<config_src>
 
 #### CLI Explanation
 ```
-node <mocha_path>
+<mocha_path>
 ```
 Pass the path to `mocha`. From example `node_modules/mocha/bin/mocha`. You could simply use `mocha` instead if you have it globally.
 
 ```
-node <bedrock_audit_src>
+<bedrock_audit_src>
 ```
 Set the path for the `bedrock-audit` main src file. It is required.
 
