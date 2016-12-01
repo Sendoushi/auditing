@@ -6,6 +6,7 @@
     "type": "git",
     "url": "git@bitbucket.org:sendoushi/bedrock-audit.git"
   },
+  "main": "src/audit.js",
   "scripts": {
     "test": "npm run eslint-test; npm run mocha-test",
     "mocha-test": "$(npm bin)/mocha ./test/test.js",

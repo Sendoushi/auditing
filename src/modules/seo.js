@@ -3,9 +3,9 @@
 //-------------------------------------
 // Functions
 
-function gmetrix() {
-    // TODO: ...
-}
+// function gmetrix() {
+// TODO: ...
+// }
 
 /**
  * Checks if is compliant

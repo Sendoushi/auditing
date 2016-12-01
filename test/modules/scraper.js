@@ -1,16 +1,11 @@
-/* eslint-disable strict */
-'use strict';
-/* eslint-enable */
+/* eslint-disable strict */'use strict';/* eslint-enable */
 /* global describe it */
 
-// --------------------------------
-// Vars / Imports
-
 var expect = require('chai').expect;
-var scraper = require('../../suite/scraper.js');
+var scraper = require('../../src/scraper.js');
 
 // --------------------------------
-// General functions
+// Functions
 
 // --------------------------------
 // Suite of tests

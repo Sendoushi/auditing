@@ -1,17 +1,12 @@
-/* eslint-disable strict */
-'use strict';
-/* eslint-enable */
+/* eslint-disable strict */'use strict';/* eslint-enable */
 /* global describe it */
 
-// --------------------------------
-// Vars / Imports
-
 var expect = require('chai').expect;
-var config = require('../../suite/config.js');
-var utils = require('../../suite/utils.js');
+var file = require('bedrock-utils/src/node/file.js');
+var config = require('../../src/config.js');
 
 // --------------------------------
-// General functions
+// Functions
 
 // --------------------------------
 // Suite of tests
@@ -32,7 +27,7 @@ describe('config', function () {
         });
 
         it('should return a valid config', function () {
-            var configObj = JSON.parse(utils.readFile('./test/examples/config.json'));
+            var configObj = JSON.parse(file.readFile('./test/examples/config.json'));
             var result = config.get(configObj);
 
             expect(result).to.be.an('object');

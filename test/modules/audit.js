@@ -1,23 +1,19 @@
-/* eslint-disable strict */
-'use strict';
-/* eslint-enable */
+/* eslint-disable strict */'use strict';/* eslint-enable */
 /* global describe it */
 
-// --------------------------------
-// Vars / Imports
-
-var expect = require('chai').expect;
-var audit = require('../../suite/audit.js');
+// var expect = require('chai').expect;
+// var audit = require('../../src/audit.js');
 
 // --------------------------------
-// General functions
+// Functions
 
 // --------------------------------
 // Suite of tests
 
-describe.only('audit', function () {
-    it('should run', function (done) {
+describe('audit', function () {
+    it.skip('should run', function (done) {
         // TODO: How to test this?
+        // TODO: Stubs??
         // audit({
         //     projectId: 'test',
         //     projectName: 'Test',
@@ -32,5 +28,25 @@ describe.only('audit', function () {
         // })
         // .catch(done);
         done();
+    });
+
+    it.skip('should gatherData', function () {
+        // TODO: ...
+    });
+
+    it.skip('should buildAudits', function () {
+        // TODO: ...
+    });
+
+    it.skip('should auditReq', function () {
+        // TODO: ...
+    });
+
+    it.skip('should runRule', function () {
+        // TODO: ...
+    });
+
+    it.skip('should ruleResult', function () {
+        // TODO: ...
     });
 });

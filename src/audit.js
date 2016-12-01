@@ -170,4 +170,11 @@ function run(config) {
 // Runtime
 
 argv.config && run(argv.config);
-module.exports = { run: run };
+module.exports = {
+    run: run,
+    gatherData: gatherData,
+    buildAudits: buildAudits,
+    auditReq: auditReq,
+    runRule: runRule,
+    ruleResult: ruleResult
+};
