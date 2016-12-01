@@ -1,7 +1,7 @@
 /* global Promise */
 var chromeLauncher = require('lighthouse/lighthouse-cli/chrome-launcher.js');
 var lighthouse = require('lighthouse');
-var logger = require('../logger.js');
+var logger = require('bedrock-utils/src/logger.js');
 
 //-------------------------------------
 // Functions

@@ -5,7 +5,7 @@
 
 // Import packages
 var jsdom = require('jsdom');
-var utils = require('./utils.js');
+var bedrockPath = require('bedrock-utils/src/node/path.js');
 
 //-------------------------------------
 // Functions
@@ -52,9 +52,8 @@ function getReqUrls(urls, base, baseEnv) {
  */
 function getDom(url) {
     var promise = new Promise(function (resolve, reject) {
-
         // Need to check if url is ok
-        if (!utils.isUrl(url)) {
+        if (!bedrockPath.isUrl(url)) {
             return reject(new Error('Url not valid'));
         }
 

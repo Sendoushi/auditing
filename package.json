@@ -1,5 +1,5 @@
 {
-  "name": "bedrock_audit",
+  "name": "bedrock-audit",
   "version": "0.0.1",
   "description": "Audits to use on frontend",
   "repository": {
@@ -8,8 +8,8 @@
   },
   "scripts": {
     "test": "npm run eslint-test; npm run mocha-test",
-    "mocha-test": "node ./node_modules/mocha/bin/mocha ./test/test.js",
-    "eslint-test": "node ./node_modules/.bin/eslint -- ./suite/**/*.js",
+    "mocha-test": "$(npm bin)/mocha ./test/test.js",
+    "eslint-test": "$(npm bin)/eslint -- ./suite/**/*.js",
     "audit-test": "export ENV_BEDROCK_AUDIT_BASE=\"http://google.pt\" && node ./node_modules/mocha/bin/mocha ./suite/audit.js --config=\"./test/examples/config.json\""
   },
   "devDependencies": {
@@ -19,6 +19,7 @@
     "eslint-plugin-react": "^6.2.0"
   },
   "dependencies": {
+    "bedrock-utils": "git://github.com/Sendoushi/bedrock-utils.git#0.1.1",
     "chai": "^3.5.0",
     "joi": "^9.2.0",
     "jsdom": "^9.8.3",

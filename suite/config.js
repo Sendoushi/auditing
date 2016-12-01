@@ -6,7 +6,8 @@
 // Vars / Imports
 
 var Joi = require('joi');
-var utils = require('./utils.js');
+var bedrockFile = require('bedrock-utils/src/node/file.js');
+var bedrockPath = require('bedrock-utils/src/node/path.js');
 
 var STRUCT = Joi.object().keys({
     projectId: Joi.string().default('projectname'),
@@ -27,8 +28,8 @@ var STRUCT = Joi.object().keys({
  * @param  {object} config
  * @return {boolean}
  */
-function verify(vConfig) {
-    var result = Joi.validate(vConfig, STRUCT);
+function verify(config) {
+    var result = Joi.validate(config, STRUCT);
     var value = result.value;
 
     if (result.error) {
@@ -48,7 +49,7 @@ function verify(vConfig) {
  */
 function get(config) {
     if (typeof config === 'string') {
-        config = utils.readFile(utils.getPath(config));
+        config = bedrockFile.readFile(bedrockPath.getPwd(config));
         config = JSON.parse(config);
     }
 

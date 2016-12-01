@@ -10,8 +10,8 @@
 
 var argv = require('yargs').argv;
 var scraper = require('./scraper.js');
-var utils = require('./utils.js');
-var logger = require('./logger.js');
+var bedrockPath = require('bedrock-utils/src/node/path.js');
+var logger = require('bedrock-utils/src/logger.js');
 
 // Import modules
 var modules = {
@@ -95,7 +95,7 @@ function auditReq(audits, req) {
  */
 function buildAudits(audits) {
     audits = (typeof audits === 'string') ? [audits] : audits;
-    return audits.map(mod => modules[mod] || require(utils.getPath(mod)))
+    return audits.map(mod => modules[mod] || require(bedrockPath.getPwd(mod)))
     .filter(val => !!val);
 }
 
