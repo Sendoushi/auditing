@@ -11,42 +11,60 @@
 // Suite of tests
 
 describe('audit', function () {
-    it.skip('should run', function (done) {
-        // TODO: How to test this?
-        // TODO: Stubs??
-        // audit({
-        //     projectId: 'test',
-        //     projectName: 'Test',
-        //     data: [{
-        //         urls: ['http://google.pt'],
-        //         audits: ['w3', 'seo']
-        //     }]
-        // })
-        // .then(function (data) {
-        //     // TODO: ...
-        //     done();
-        // })
-        // .catch(done);
-        done();
+    // run
+    describe('run', function () {
+        it.skip('should run', function (done) {
+            // TODO: How to test this?
+            // TODO: Stubs??
+            // audit({
+            //     projectId: 'test',
+            //     projectName: 'Test',
+            //     data: [{
+            //         urls: ['http://google.pt'],
+            //         audits: ['w3', 'seo']
+            //     }]
+            // })
+            // .then(function (data) {
+            //     // TODO: ...
+            //     done();
+            // })
+            // .catch(done);
+            done();
+        });
     });
 
-    it.skip('should gatherData', function () {
-        // TODO: ...
+    // gatherData
+    describe('gatherData', function () {
+        it.skip('should gatherData', function () {
+            // TODO: ...
+        });
     });
 
-    it.skip('should buildAudits', function () {
-        // TODO: ...
+    // buildAudits
+    describe('buildAudits', function () {
+        it.skip('should buildAudits', function () {
+            // TODO: ...
+        });
     });
 
-    it.skip('should auditReq', function () {
-        // TODO: ...
+    // auditReq
+    describe('auditReq', function () {
+        it.skip('should auditReq', function () {
+            // TODO: ...
+        });
     });
 
-    it.skip('should runRule', function () {
-        // TODO: ...
-    });
+    // runRule
+    describe('runRule', function () {
+        it.skip('should runRule', function () {
+            // TODO: ...
+        });
+    }
 
-    it.skip('should ruleResult', function () {
-        // TODO: ...
+    // ruleResult
+    describe('ruleResult', function () {
+        it.skip('should ruleResult', function () {
+            // TODO: ...
+        });
     });
 });

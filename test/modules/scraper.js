@@ -11,6 +11,7 @@ var scraper = require('../../src/scraper.js');
 // Suite of tests
 
 describe('scraper', function () {
+    // getReqUrls
     describe('getReqUrls', function () {
         it('should get an array', function () {
             var urls = [
@@ -62,6 +63,7 @@ describe('scraper', function () {
         });
     });
 
+    // getDom
     describe('getDom', function () {
         it('should get a window with DOM', function (done) {
             this.timeout(10000);
@@ -86,6 +88,7 @@ describe('scraper', function () {
         });
     });
 
+    // run
     describe('run', function () {
         it('should retrieve a full object', function (done) {
             var urls = ['http://google.com'];

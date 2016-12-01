@@ -12,6 +12,7 @@ var config = require('../../src/config.js');
 // Suite of tests
 
 describe('config', function () {
+    // get
     describe('get', function () {
         it('should load config', function () {
             var result = config.get('./test/examples/config.json');
