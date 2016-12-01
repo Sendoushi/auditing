@@ -59,7 +59,7 @@ describe('audit', function () {
         it.skip('should runRule', function () {
             // TODO: ...
         });
-    }
+    });
 
     // ruleResult
     describe('ruleResult', function () {

@@ -40,5 +40,14 @@ describe('config', function () {
             expect(result.data[0].urls).to.be.an('array');
             expect(result.data[0].audits).to.be.an('array');
         });
+
+        it('should fail on an invalid config', function (done) {
+            try {
+                config.get({ foo: 'bar' });
+                done('It should error!');
+            } catch (err) {
+                done();
+            }
+        });
     });
 });
