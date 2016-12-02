@@ -10,6 +10,7 @@
   "scripts": {
     "test": "npm run eslint-test; npm run mocha-test",
     "mocha-test": "$(npm bin)/mocha ./test/test.js",
+    "mocha-html-test": "npm run mocha-test -- --reporter mochawesome --reporter-options reportDir=\"test/_report\",reportName=\"report\",reportTitle=\"Bedrock utils report\",inlineAssets=true",
     "eslint-test": "$(npm bin)/eslint -- ./suite/**/*.js",
     "audit-test": "export ENV_BEDROCK_AUDIT_BASE=\"http://google.pt\" && node ./node_modules/mocha/bin/mocha ./suite/audit.js --config=\"./test/examples/config.json\""
   },
@@ -26,6 +27,7 @@
     "jsdom": "^9.8.3",
     "lighthouse": "^1.2.2",
     "mocha": "^3.2.0",
+    "mochawesome": "^1.5.4",
     "w3cjs": "^0.3.0",
     "yargs": "^6.3.0"
   }
