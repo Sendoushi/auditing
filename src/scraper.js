@@ -101,6 +101,14 @@ function run(data) {
 
 module.exports = {
     run: run,
-    getReqUrls: getReqUrls,
-    getDom: getDom
+    getDom: getDom,
+
+    // Essentially for testing purposes
+    'test.get': function (req) {
+        var methods = {
+            getReqUrls: getReqUrls
+        };
+
+        return methods[req];
+    }
 };

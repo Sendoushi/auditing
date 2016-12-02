@@ -33,7 +33,7 @@ var modules = {
  * @param {function} done
  */
 function ruleResult(rule, data, done) {
-    if (typeof data !== 'object' || !data.hasOwnProperty.length) {
+    if (!data || typeof data !== 'object' || !data.hasOwnProperty.length) {
         return done();
     }
 
@@ -60,6 +60,12 @@ function ruleResult(rule, data, done) {
  * @param {object} audit
  */
 function runRule(req, audit) {
+    if (!audit || typeof audit !== 'object') {
+        throw new Error('You need a valid audit object');
+    }
+
+    audit.rules = audit.rules || [];
+
     // Now lets go through rules
     audit.rules.forEach(function (rule) {
         it(rule.name, function (done) {
@@ -79,6 +85,14 @@ function runRule(req, audit) {
  * @param {object} req
  */
 function auditReq(audits, req) {
+    if (!audits || typeof audits !== 'object') {
+        throw new Error('You need a valid audits list');
+    }
+
+    if (!req || typeof req !== 'object') {
+        throw new Error('You need a valid req');
+    }
+
     describe('Auditing: ' + req.originalUrl, function () {
         // Go through each audit
         audits.forEach(function (audit) {
@@ -169,12 +183,27 @@ function run(config) {
 //-------------------------------------
 // Runtime
 
-argv.config && run(argv.config);
+argv && argv.config && run(argv.config);
 module.exports = {
     run: run,
-    gatherData: gatherData,
-    buildAudits: buildAudits,
-    auditReq: auditReq,
-    runRule: runRule,
-    ruleResult: ruleResult
+
+    // Essentially for testing purposes
+    'test.get': function (req) {
+        var methods = {
+            gatherData: gatherData,
+            buildAudits: buildAudits,
+            auditReq: auditReq,
+            runRule: runRule,
+            ruleResult: ruleResult
+        };
+
+        return methods[req];
+    },
+    'test.stubs': function (stubs) {
+        /* eslint-disable no-native-reassign */
+        describe = stubs.describe || describe;
+        it = stubs.it || it;
+        /* eslint-enable no-native-reassign */
+        logger = stubs.logger || logger;
+    }
 };

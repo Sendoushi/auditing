@@ -20,7 +20,7 @@ describe('scraper', function () {
                 'https://www.google.com',
                 'https://google.com'
             ];
-            var result = scraper.getReqUrls(urls);
+            var result = scraper['test.get']('getReqUrls')(urls);
 
             expect(result).to.be.an('array');
             expect(result).to.have.length(urls.length);
@@ -32,7 +32,7 @@ describe('scraper', function () {
 
         it('should get an array with base', function () {
             var urls = ['www.google.com', 'google.com'];
-            var result = scraper.getReqUrls(urls, 'http://');
+            var result = scraper['test.get']('getReqUrls')(urls, 'http://');
 
             expect(result).to.be.an('array');
             expect(result).to.have.length(urls.length);
@@ -51,7 +51,7 @@ describe('scraper', function () {
             process.env.BEDROCK_AUDIT_BASE = 'http://';
 
             // Lets test
-            result = scraper.getReqUrls(urls, null, 'BEDROCK_AUDIT_BASE');
+            result = scraper['test.get']('getReqUrls')(urls, null, 'BEDROCK_AUDIT_BASE');
 
             expect(result).to.be.an('array');
             expect(result).to.have.length(urls.length);
