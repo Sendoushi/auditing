@@ -3,6 +3,8 @@
 Audits to use on the frontend.
 The runner is based on [mocha](https://mochajs.org/).
 
+[![Build Status](https://travis-ci.org/Sendoushi/bedrock-audit.svg?branch=master)](https://travis-ci.org/Sendoushi/bedrock-audit)
+
 ## Installation
 You need to have [node](http://nodejs.org) so you can have the package dependency management and use the tasks:
 - Install [node](http://nodejs.org)
