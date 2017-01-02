@@ -5,8 +5,10 @@ The runner is based on [mocha](https://mochajs.org/).
 
 [![Build Status](https://travis-ci.org/Sendoushi/bedrock-audit.svg?branch=master)](https://travis-ci.org/Sendoushi/bedrock-audit)
 
+----------
+
 ## Installation
-You need to have [node](http://nodejs.org) so you can have the package dependency management and use the tasks:
+
 - Install [node](http://nodejs.org)
 
 ```
@@ -15,10 +17,14 @@ npm init # If you don't have a package.json already
 npm install --save git://github.com/Sendoushi/bedrock-audit.git#0.0.1
 ```
 
+----------
+
 ## Tasks
 
 Set a `.audit.json` and run all the tasks you want when you pass it to `bedrock-audit`.<br>
-**Note:** Any kind of path should be absolute or relative to the place the script is called.
+
+**Note:**
+Any kind of path should be absolute or relative to the place the script is called.
 
 ### Usage
 

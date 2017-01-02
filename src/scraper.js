@@ -1,11 +1,8 @@
-/* eslint-disable strict */
 'use strict';
-/* eslint-enable strict */
 /* global Promise */
 
-// Import packages
-var jsdom = require('jsdom');
-var bedrockPath = require('bedrock-utils/src/node/path.js');
+import jsdom from 'jsdom';
+import { isUrl } from './utils.js';
 
 //-------------------------------------
 // Functions
@@ -18,13 +15,13 @@ var bedrockPath = require('bedrock-utils/src/node/path.js');
  * @param {string} baseEnv
  * @returns {array}
  */
-function getReqUrls(urls, base, baseEnv) {
+const getReqUrls = (urls, base, baseEnv) => {
     baseEnv = baseEnv && process.env[baseEnv];
     base = baseEnv || base;
 
     urls = typeof urls === 'string' ? [urls] : urls;
-    urls = urls.map(function (url) {
-        var reqUrl = url;
+    urls = urls.map((url) => {
+        let reqUrl = url;
 
         // Lets set the bases
         if (base) {
@@ -42,7 +39,7 @@ function getReqUrls(urls, base, baseEnv) {
     });
 
     return urls;
-}
+};
 
 /**
  * Gets DOM from url
@@ -50,15 +47,15 @@ function getReqUrls(urls, base, baseEnv) {
  * @param {string} url
  * @returns {promise}
  */
-function getDom(url) {
-    var promise = new Promise(function (resolve, reject) {
+const getDom = (url) => {
+    const promise = new Promise((resolve, reject) => {
         // Need to check if url is ok
-        if (!bedrockPath.isUrl(url)) {
+        if (!isUrl(url)) {
             return reject(new Error('Url not valid'));
         }
 
         // Set jsdom...
-        jsdom.env(url, ['http://code.jquery.com/jquery.js'], function (err, window) {
+        jsdom.env(url, ['http://code.jquery.com/jquery.js'], (err, window) => {
             if (err) {
                 return reject(err);
             }
@@ -69,7 +66,7 @@ function getDom(url) {
     });
 
     return promise;
-}
+};
 
 /**
  * Scrapes
@@ -77,38 +74,30 @@ function getDom(url) {
  * @param  {object} data
  * @returns {promise}
  */
-function run(data) {
-    var urls = typeof data.urls === 'string' ? [data.urls] : data.urls;
-    var reqUrls = getReqUrls(urls, data.base, data.baseEnv);
-    var urlsPromises = reqUrls.map(function (req) {
+const run = (data) => {
+    const urls = typeof data.urls === 'string' ? [data.urls] : data.urls;
+    const reqUrls = getReqUrls(urls, data.base, data.baseEnv);
+    const urlsPromises = reqUrls.map((req) => {
         // Request DOM of each
         return getDom(req.requestUrl)
-        .then(function (window) {
+        .then((window) => {
             req.window = window;
             return req;
         })
-        .catch(function (err) {
+        .catch((err) => {
             req.err = err;
             throw req;
         });
     });
 
     return Promise.all(urlsPromises);
-}
+};
 
 // --------------------------------
 // Export
 
-module.exports = {
-    run: run,
-    getDom: getDom,
+export { run };
+export { getDom };
 
-    // Essentially for testing purposes
-    'test.get': function (req) {
-        var methods = {
-            getReqUrls: getReqUrls
-        };
-
-        return methods[req];
-    }
-};
+// Essentially for testing purposes
+export const __testMethods__ = { run, getDom, getReqUrls };

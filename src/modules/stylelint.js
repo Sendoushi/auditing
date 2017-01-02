@@ -1,10 +1,12 @@
+'use strict';
+
 //-------------------------------------
 // Functions
 
 //-------------------------------------
 // Export
 
-module.exports = {
+export default {
     name: 'stylelint',
     rules: []
 };

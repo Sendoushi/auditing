@@ -1,9 +1,9 @@
-/* eslint-disable strict */'use strict';/* eslint-enable */
+'use strict';
 /* global describe it */
 
-var expect = require('chai').expect;
-var file = require('bedrock-utils/src/node/file.js');
-var config = require('../../src/config.js');
+import { expect } from 'chai';
+import { readFile } from '../utils.js';
+import { __testMethods__ as fns } from '../config.js';
 
 // --------------------------------
 // Functions
@@ -11,11 +11,11 @@ var config = require('../../src/config.js');
 // --------------------------------
 // Suite of tests
 
-describe('config', function () {
+describe('audit.config', () => {
     // get
-    describe('get', function () {
-        it('should load config', function () {
-            var result = config.get('./test/examples/config.json');
+    describe('get', () => {
+        it('should load config', () => {
+            const result = fns.get('./src/_test/data/config.json');
 
             expect(result).to.be.an('object');
             expect(result).to.have.all.keys(['projectId', 'projectName', 'data']);
@@ -27,9 +27,9 @@ describe('config', function () {
             expect(result.data[0].audits).to.be.an('array');
         });
 
-        it('should return a valid config', function () {
-            var configObj = JSON.parse(file.readFile('./test/examples/config.json'));
-            var result = config.get(configObj);
+        it('should return a valid config', () => {
+            const configObj = JSON.parse(readFile('./src/_test/data/config.json'));
+            const result = fns.get(configObj);
 
             expect(result).to.be.an('object');
             expect(result).to.have.all.keys(['projectId', 'projectName', 'data']);
@@ -41,9 +41,9 @@ describe('config', function () {
             expect(result.data[0].audits).to.be.an('array');
         });
 
-        it('should fail on an invalid config', function (done) {
+        it('should fail on an invalid config', (done) => {
             try {
-                config.get({ foo: 'bar' });
+                fns.get({ foo: 'bar' });
                 done('It should error!');
             } catch (err) {
                 done();

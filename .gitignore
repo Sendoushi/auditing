@@ -1,4 +1,10 @@
+.DS_Store
+.vscode
+.idea
+
 node_modules
-build
+bower_components
+vendor
+
 *.log
-test/_report
+*.log.*

@@ -1,5 +1,7 @@
+'use strict';
 /* global Promise */
-var w3cjs = require('w3cjs');
+
+import w3cjs from 'w3cjs';
 
 //-------------------------------------
 // Functions
@@ -10,26 +12,19 @@ var w3cjs = require('w3cjs');
  * @param {object} req
  * @returns
  */
-function isCompliant(req) {
-    var documentHtml = req.window.document.documentElement.outerHTML;
-    var promise;
+const isCompliant = (req) => {
+    const documentHtml = req.window.document.documentElement.outerHTML;
 
     // Now lets validate
-    promise = new Promise(function (resolve, reject) {
+    const promise = new Promise((resolve, reject) => {
         w3cjs.validate({
             input: documentHtml,
             callback: res => resolve(res && res.messages) || reject(res)
         });
     })
-    .then(function (data) {
+    .then((data) => {
         // Parse it as we expect it
-        data = data.map(function (val) {
-            return {
-                type: val.type,
-                msg: val.message,
-                original: val
-            };
-        });
+        data = data.map((val) => ({ type: val.type, msg: val.message, original: val }));
 
         // Lets see if there is any error
         data.forEach(val => {
@@ -40,12 +35,12 @@ function isCompliant(req) {
     });
 
     return promise;
-}
+};
 
 //-------------------------------------
 // Export
 
-module.exports = {
+export default {
     name: 'w3',
     rules: [
         { name: 'isCompliant', fn: isCompliant }

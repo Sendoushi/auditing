@@ -1,3 +1,4 @@
+'use strict';
 /* global Promise */
 
 //-------------------------------------
@@ -9,9 +10,9 @@
  * @param {object} req
  * @returns
  */
-function hasBody(req) {
-    var promise = new Promise(function (resolve, reject) {
-        var bodyHtml = req.window.$('body').html();
+const hasBody = (req) => {
+    const promise = new Promise((resolve, reject) => {
+        const bodyHtml = req.window.$('body').html();
 
         if (bodyHtml.length) {
             resolve(true);
@@ -21,12 +22,12 @@ function hasBody(req) {
     });
 
     return promise;
-}
+};
 
 //-------------------------------------
 // Export
 
-module.exports = {
+export default {
     name: 'custom',
     rules: [
         { name: 'hasBody', fn: hasBody }

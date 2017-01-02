@@ -1,3 +1,4 @@
+'use strict';
 /* global Promise */
 
 //-------------------------------------
@@ -13,16 +14,14 @@
  * @param {object} req
  * @returns
  */
-function hasCanonical(req) {
-    var promise;
-
+const hasCanonical = (req) => {
     // Now lets validate
-    promise = new Promise(function (resolve, reject) {
-        var links = req.window.$('link');
-        var hasIt;
+    const promise = new Promise((resolve, reject) => {
+        const links = req.window.$('link');
+        let hasIt;
 
         // Lets see if one of these is a canonical one
-        links.each(function (i, val) {
+        links.each((i, val) => {
             hasIt = hasIt || val.getAttribute('rel') === 'canonical';
         });
 
@@ -30,12 +29,12 @@ function hasCanonical(req) {
     });
 
     return promise;
-}
+};
 
 //-------------------------------------
 // Export
 
-module.exports = {
+export default {
     name: 'seo',
     rules: [
         { name: 'hasCanonical', fn: hasCanonical }

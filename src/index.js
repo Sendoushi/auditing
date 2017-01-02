@@ -1,21 +1,17 @@
 #!/usr/bin/env node
 
-/* eslint-disable strict */
 'use strict';
-/* eslint-enable strict */
 /* global describe, it, Promise */
 
-//-------------------------------------
-// Vars / Imports
-
-var argv = require('yargs').argv;
-var scraper = require('./scraper.js');
-var bedrockPath = require('bedrock-utils/src/node/path.js');
-var logger = require('bedrock-utils/src/logger.js');
+import { argv } from 'yargs';
+import scraper from './scraper.js';
+import { get as configGet } from './config.js';
+import { getPwd } from './utils.js';
 
 // Import modules
-var modules = {
+const modules = {
     w3: require('./modules/w3.js'),
+    wcag: require('./modules/wcag.js'),
     SEO: require('./modules/seo.js'),
     lighthouse: require('./modules/lighthouse.js'),
     stylelint: require('./modules/stylelint.js'),
@@ -32,26 +28,28 @@ var modules = {
  * @param {object} data
  * @param {function} done
  */
-function ruleResult(rule, data, done) {
+const ruleResult = (rule, data, done) => {
     if (!data || typeof data !== 'object' || !data.hasOwnProperty.length) {
         return done();
     }
 
     // Iterate array...
-    describe(rule.name + ': Nested...', function () {
-        data.forEach(function (res) {
-            it(res.msg, function () {
+    describe(`${rule.name}: Nested...`, () => {
+        data.forEach((res) => {
+            it(res.msg, () => {
                 if (res.type === 'error') {
                     throw res;
                 } else if (res.type === 'warning') {
-                    logger.warn(rule.name, res);
+                    /* eslint-disable no-console */
+                    console.warn(rule.name, res);
+                    /* eslint-enable no-console */
                 }
             });
         });
 
         done();
     });
-}
+};
 
 /**
  * Run single rule
@@ -59,7 +57,7 @@ function ruleResult(rule, data, done) {
  * @param {object} req
  * @param {object} audit
  */
-function runRule(req, audit) {
+const runRule = (req, audit) => {
     if (!audit || typeof audit !== 'object') {
         throw new Error('You need a valid audit object');
     }
@@ -67,7 +65,7 @@ function runRule(req, audit) {
     audit.rules = audit.rules || [];
 
     // Now lets go through rules
-    audit.rules.forEach(function (rule) {
+    audit.rules.forEach((rule) => {
         it(rule.name, function (done) {
             this.timeout(20000);
 
@@ -76,7 +74,7 @@ function runRule(req, audit) {
             .catch(err => ruleResult(rule, err, done));
         });
     });
-}
+};
 
 /**
  * Audit request
@@ -84,7 +82,7 @@ function runRule(req, audit) {
  * @param {array} audits
  * @param {object} req
  */
-function auditReq(audits, req) {
+const auditReq = (audits, req) => {
     if (!audits || typeof audits !== 'object') {
         throw new Error('You need a valid audits list');
     }
@@ -93,13 +91,13 @@ function auditReq(audits, req) {
         throw new Error('You need a valid req');
     }
 
-    describe('Auditing: ' + req.originalUrl, function () {
+    describe(`Auditing: ${req.originalUrl}`, () => {
         // Go through each audit
-        audits.forEach(function (audit) {
-            describe('Audit: ' + audit.name, runRule.bind(null, req, audit));
+        audits.forEach((audit) => {
+            describe(`Audit: ${audit.name}`, runRule.bind(null, req, audit));
         });
     });
-}
+};
 
 /**
  * Build audits array
@@ -107,11 +105,11 @@ function auditReq(audits, req) {
  * @param {array} audits
  * @returns {array}
  */
-function buildAudits(audits) {
+const buildAudits = (audits) => {
     audits = (typeof audits === 'string') ? [audits] : audits;
-    return audits.map(mod => modules[mod] || require(bedrockPath.getPwd(mod)))
+    return audits.map(mod => modules[mod] || require(getPwd(mod)))
     .filter(val => !!val);
-}
+};
 
 /**
  * Gather data
@@ -119,18 +117,18 @@ function buildAudits(audits) {
  * @param {array} data
  * @returns {promise}
  */
-function gatherData(data) {
-    var promises = [];
+const gatherData = (data) => {
+    const promises = [];
 
     // Go through each request
-    data.forEach(function (req) {
-        var promise = new Promise(function (resolve, reject) {
-            describe('Requesting urls', function () {
+    data.forEach((req) => {
+        const promise = new Promise((resolve, reject) => {
+            describe('Requesting urls', () => {
                 it('Gathering data...', function (done) {
                     this.timeout(10000);
 
                     // Get the DOM
-                    scraper.run(req).then(function (scrapData) {
+                    scraper.run(req).then((scrapData) => {
                         req.auditsData = buildAudits(req.audits);
                         req.urlsData = scrapData;
 
@@ -149,7 +147,7 @@ function gatherData(data) {
     });
 
     return Promise.all(promises);
-}
+};
 
 /**
  * Initialize audits
@@ -157,53 +155,34 @@ function gatherData(data) {
  * @param {object|string} config
  * @returns {promise}
  */
-function run(config) {
-    config = require('./config.js').get(config);
+const run = (config) => {
+    config = configGet(config);
 
     // Lets gather data from the urls
     return gatherData(config.data)
-    .then(function (data) {
-        var promises = [];
+    .then((data) => {
+        const promises = [];
 
         // Go through each element in data
-        data.forEach(function (req) {
-            req.urlsData.forEach(function (url) {
-                // Lets run audits per request
-                promises.push(auditReq(req.auditsData, url));
-            });
-        });
+        // Lets run audits per request
+        data.forEach((req) => req.urlsData.forEach((url) => promises.push(auditReq(req.auditsData, url))));
 
         return Promise.all(promises);
     })
-    .catch(function (err) {
-        throw err;
-    });
-}
+    .catch((err) => { throw err; });
+};
 
 //-------------------------------------
 // Runtime
 
 argv && argv.config && run(argv.config);
-module.exports = {
-    run: run,
+export { run };
 
-    // Essentially for testing purposes
-    'test.get': function (req) {
-        var methods = {
-            gatherData: gatherData,
-            buildAudits: buildAudits,
-            auditReq: auditReq,
-            runRule: runRule,
-            ruleResult: ruleResult
-        };
-
-        return methods[req];
-    },
-    'test.stubs': function (stubs) {
-        /* eslint-disable no-native-reassign */
-        describe = stubs.describe || describe;
-        it = stubs.it || it;
-        /* eslint-enable no-native-reassign */
-        logger = stubs.logger || logger;
-    }
+// Essentially for testing purposes
+export const __testMethods__ = { run, gatherData, buildAudits, auditReq, runRule, ruleResult };
+export const __testStubs__ = (stubs) => {
+    /* eslint-disable no-native-reassign */
+    describe = stubs.describe || describe;
+    it = stubs.it || it;
+    /* eslint-enable no-native-reassign */
 };

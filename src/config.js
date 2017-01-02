@@ -1,15 +1,9 @@
-/* eslint-disable strict */
 'use strict';
-/* eslint-enable strict */
 
-//-------------------------------------
-// Vars / Imports
+import Joi from 'joi';
+import { readFile, getPwd } from './utils.js';
 
-var Joi = require('joi');
-var bedrockFile = require('bedrock-utils/src/node/file.js');
-var bedrockPath = require('bedrock-utils/src/node/path.js');
-
-var STRUCT = Joi.object().keys({
+const STRUCT = Joi.object().keys({
     projectId: Joi.string().default('projectname'),
     projectName: Joi.string().default('Project Name'),
     data: Joi.array().items(Joi.object().keys({
@@ -28,18 +22,14 @@ var STRUCT = Joi.object().keys({
  * @param  {object} config
  * @return {boolean}
  */
-function verify(config) {
-    var result = Joi.validate(config, STRUCT);
-    var value = result.value;
+const verify = (config) => {
+    const result = Joi.validate(config, STRUCT);
+    const value = result.value;
 
-    if (result.error) {
-        return {
-            error: { type: 'root', err: result.error }
-        };
-    }
-
-    return { value: value };
-}
+    return result.error ? {
+        error: { type: 'root', err: result.error }
+    } : { value };
+};
 
 /**
  * Gets config
@@ -47,27 +37,26 @@ function verify(config) {
  * @param {object|string} config
  * @returns {object}
  */
-function get(config) {
+const get = (config) => {
     if (typeof config === 'string') {
-        config = bedrockFile.readFile(bedrockPath.getPwd(config));
+        config = readFile(getPwd(config));
         config = JSON.parse(config);
     }
 
     config = verify(config);
 
     // Verify config
-    if (config.error) {
+    if (!config || config.error) {
         throw new Error(config.error);
-    } else {
-        config = config.value;
     }
 
-    return config;
-}
+    return config.value;
+};
 
 //-------------------------------------
 // Runtime
 
-module.exports = {
-    get: get
-};
+export { get };
+
+// Essentially for testing purposes
+export const __testMethods__ = { get };

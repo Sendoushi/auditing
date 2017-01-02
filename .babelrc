@@ -1,0 +1,16 @@
+{
+    "presets": ["es2015"],
+    "plugins": [],
+    "env": {
+        "test": {},
+        "dev": {},
+        "staging": {},
+        "production": {
+            "plugins": [
+                ["remove-code", {
+                    "var": ["__[^_]+__"]
+                }]
+            ]
+        }
+    }
+}
