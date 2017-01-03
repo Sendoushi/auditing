@@ -1,6 +1,6 @@
 {
   "name": "auditing",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Set the audits once and just run the tests",
   "repository": {
     "type": "git",

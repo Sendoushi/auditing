@@ -57,7 +57,7 @@ node ./node_modules/mocha/bin/mocha ./node_modules/auditing/dist/index.js --moch
 node ./node_modules/mocha/bin/mocha ./node_modules/auditing/src/index.js --compilers js:babel-core/register --mocha=true --config=".audit.json"
 ```
 
-=========
+-------------------
 
 ## Configure
 
@@ -70,12 +70,12 @@ This repo relies on usage of `*.json` config files. Below I try to explain how t
     "projectName": "<project_name>",
     "data": [{
         "urls": ["<url_path>"],
-        "audits": ["w3", "SEO", "lighthouse", "<path_to_custom>", {
+        "audits": ["<path_to_custom>", {
             "name": "Custom",
             "src": "<path_to_custom>",
             "ignore": ["<pattern_to_ignore>"]
         }, {
-            "name": "w3"
+            "name": "<path_to_custom>"
         }],
         "base": "<optionl_url_base_path>",
         "baseEnv": "<optionl_env_var_to_set_base_upon>"
