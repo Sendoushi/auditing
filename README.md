@@ -31,21 +31,22 @@ Any kind of path should be absolute or relative to the place the script is calle
 
 #### CLI
 
-```
+```sh
 node <mocha_path> <auditing> --mocha=true --config=<config_src>
 ```
 
 ##### Explanation
 
-```
+```sh
+# Pass the path to mocha. For example node_modules/mocha/bin/mocha.
+# You could simply use mocha instead if you have it globally or if you're using npm scripts.
 <mocha_path>
 ```
-Pass the path to `mocha`. From example `node_modules/mocha/bin/mocha`. You could simply use `mocha` instead if you have it globally or if you're using `npm scripts`.
 
-```
+```sh
+# Set the path for the auditing main index.js file.
 <auditing>
 ```
-Set the path for the `auditing` main `index.js` file. It is required.
 
 ##### Example
 
