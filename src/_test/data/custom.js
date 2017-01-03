@@ -11,14 +11,14 @@
  * @returns
  */
 const hasBody = (req) => {
-    const promise = new Promise((resolve, reject) => {
+    const promise = new Promise((resolve) => {
         const bodyHtml = req.window.$('body').html();
 
-        if (bodyHtml.length) {
-            resolve(true);
-        } else {
-            reject(false);
+        if (!bodyHtml.length) {
+            throw new Error('No body found');
         }
+
+        resolve(true);
     });
 
     return promise;

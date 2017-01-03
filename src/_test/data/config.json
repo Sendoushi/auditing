@@ -9,11 +9,17 @@
             "/search?q=foo&oq=foo&aqs=chrome..69i57j69i60j69i61j69i60.567j0j7&sourceid=chrome&ie=UTF-8",
             "/search?q=bar&oq=bar&aqs=chrome..69i57j69i60j69i61j69i60.567j0j7&sourceid=chrome&ie=UTF-8"
         ],
-        "audits": ["w3", "SEO", "./test/examples/custom.js"],
+        "audits": ["w3", "SEO", "./src/_test/data/custom.js"],
         "base": "http://google.pt"
     }, {
         "urls": ["/search?q=foobar&oq=foobar&aqs=chrome.0.69i59j69i60.253j0j9&sourceid=chrome&ie=UTF-8"],
         "audits": ["w3", "SEO"],
-        "baseEnv": "ENV_BEDROCK_AUDIT_BASE"
+        "baseEnv": "AUDIT_BASE"
+    }, {
+        "urls": ["http://google.pt"],
+        "audits": ["w3", {
+            "src": "./src/_test/data/custom.js",
+            "ignore": ["hasBody"]
+        }]
     }]
 }

@@ -21,10 +21,13 @@ describe('audit.config', () => {
             expect(result).to.have.all.keys(['projectId', 'projectName', 'data']);
             expect(result.data).to.be.an('array');
             expect(result.data).to.have.length.above(1);
-            expect(result.data[0]).to.have.all.keys(['urls', 'audits']);
-            expect(result.data[0]).to.contain.any.keys('urls', 'audits', 'base', 'baseEnv');
-            expect(result.data[0].urls).to.be.an('array');
-            expect(result.data[0].audits).to.be.an('array');
+
+            result.data.forEach(val => {
+                expect(val).to.contain.all.keys(['urls', 'audits']);
+                expect(val).to.contain.any.keys('urls', 'audits', 'base', 'baseEnv');
+                expect(val.urls).to.be.an('array');
+                expect(val.audits).to.be.an('array');
+            });
         });
 
         it('should return a valid config', () => {
@@ -35,10 +38,13 @@ describe('audit.config', () => {
             expect(result).to.have.all.keys(['projectId', 'projectName', 'data']);
             expect(result.data).to.be.an('array');
             expect(result.data).to.have.length(configObj.data.length);
-            expect(result.data[0]).to.have.all.keys(['urls', 'audits']);
-            expect(result.data[0]).to.contain.any.keys('urls', 'audits', 'base', 'baseEnv');
-            expect(result.data[0].urls).to.be.an('array');
-            expect(result.data[0].audits).to.be.an('array');
+
+            result.data.forEach(val => {
+                expect(val).to.contain.all.keys(['urls', 'audits']);
+                expect(val).to.contain.any.keys('urls', 'audits', 'base', 'baseEnv');
+                expect(val.urls).to.be.an('array');
+                expect(val.audits).to.be.an('array');
+            });
         });
 
         it('should fail on an invalid config', (done) => {

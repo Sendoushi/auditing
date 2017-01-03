@@ -2,7 +2,7 @@
 /* global describe it before after beforeEach afterEach Promise */
 
 import { expect } from 'chai';
-import { __testMethods__ as fns, __testStubs__ as stubs } from '../index.js';
+import { __testMethods__ as fns } from '../index.js';
 
 // --------------------------------
 // Variables
@@ -11,205 +11,541 @@ import { __testMethods__ as fns, __testStubs__ as stubs } from '../index.js';
 // Functions
 
 /**
- * Sets basic stubs
+ * It test to act as stub
+ *
+ * @param {string} msg
+ * @param {function} cb
  */
-const setBasicStubs = () => {
-    const aDescribe = (msg, cb) => {
-        expect(msg).to.be.a('string');
-        expect(cb).to.be.a('function');
-
-        cb = cb.bind({ timeout: () => {} });
-        cb();
+const itTest = function (msg, cb) {
+    const module = {
+        done: (err) => {
+            if (err) {
+                // We want to ignore the error
+                // throw err;
+            }
+        },
+        timeout: () => {}
     };
-    const aIt = aDescribe;
 
-    // TODO: We need a way to set the log
-    stubs({
-        describe: aDescribe,
-        it: aIt,
-        logger: {
-            warn: () => {},
-            err: () => {},
-            msg: () => {}
-        }
-    });
+    cb.bind(module)(module.done);
 };
 
 // --------------------------------
 // Suite of tests
 
 describe('audit.index', () => {
+    // setup
+    describe('setup', () => {
+        it('should error without a valid describe', (done) => {
+            try {
+                fns.setup('not valid');
+                done('It should\'ve errored');
+            } catch (err) {
+                done();
+            }
+        });
+
+        it('should error without a valid it', (done) => {
+            try {
+                fns.setup(null, 'not valid');
+                done('It should\'ve errored');
+            } catch (err) {
+                done();
+            }
+        });
+
+        it('should error without a valid warn', (done) => {
+            try {
+                fns.setup(null, null, 'not valid');
+                done('It should\'ve errored');
+            } catch (err) {
+                done();
+            }
+        });
+
+        it('should make the right substitution', () => fns.setup(() => {}, () => {}, () => {}));
+
+        afterEach(() => {
+            fns.setup(null, null, null, true);
+        });
+    });
+
     // run
     describe('run', () => {
-        it.skip('should run', (done) => {
-            // TODO: How to test this?
-            // TODO: Stubs??
-            // audit({
-            //     projectId: 'test',
-            //     projectName: 'Test',
-            //     data: [{
-            //         urls: ['http://google.pt'],
-            //         audits: ['w3', 'seo']
-            //     }]
-            // })
-            // .then(function (data) {
-            //     // TODO: ...
-            //     done();
-            // })
-            // .catch(done);
-            done();
+        it('should error without a valid config', (done) => {
+            try {
+                fns.run(false).then(() => done('It should\'ve errored'));
+            } catch (err) {
+                done();
+            }
+        });
+
+        it('should run with a config source', function (done) {
+            const configSrc = './src/_test/data/config_basic.json';
+
+            // We need some time for this one to be well tested...
+            this.timeout(20000);
+
+            fns.run(configSrc)
+            .then(data => {
+                expect(data).to.be.an('object');
+                expect(data).to.have.keys(['custom']);
+                expect(data.custom).to.be.an('array');
+                expect(data.custom.length).to.eql(2);
+
+                data.custom.forEach(val => {
+                    expect(val).to.be.an('object');
+                    expect(val).to.have.keys(['name', 'status', 'result']);
+                    expect(val.name).to.be.a('string');
+                    expect(val.status).to.be.a('string');
+                });
+
+                done();
+            })
+            .catch(done);
+        });
+
+        it('should run with a config object', function (done) {
+            const configObj = require('./data/config_basic.json');
+
+            // We need some time for this one to be well tested...
+            this.timeout(20000);
+
+            fns.run(configObj)
+            .then(data => {
+                expect(data).to.be.an('object');
+                expect(data).to.have.keys(['custom']);
+                expect(data.custom).to.be.an('array');
+                expect(data.custom.length).to.eql(2);
+
+                data.custom.forEach(val => {
+                    expect(val).to.be.an('object');
+                    expect(val).to.have.keys(['name', 'status', 'result']);
+                    expect(val.name).to.be.a('string');
+                    expect(val.status).to.be.a('string');
+                });
+
+                done();
+            })
+            .catch(done);
         });
     });
 
     // gatherData
     describe('gatherData', () => {
-        it.skip('should gatherData', () => {
-            // TODO: ...
+        it('should work with an empty data', (done) => {
+            fns.gatherData([])
+            .then(done.bind(null, null))
+            .catch(done);
+        });
+
+        it('should gather data', function (done) {
+            const config = [{
+                urls: ['http://google.pt'],
+                audits: ['w3']
+            }];
+
+            // We need some time for this one to be well tested...
+            this.timeout(20000);
+
+            fns.gatherData(config)
+            .then((data) => {
+                expect(data).to.be.an('array');
+                expect(data.length).to.eql(1);
+
+                data.forEach(val => {
+                    expect(val).to.be.an('object');
+                    expect(val).to.have.keys('urls', 'audits', 'auditsData', 'urlsData');
+
+                    expect(val.urls).to.be.an('array');
+                    expect(val.urls.length).to.eql(1);
+                    val.urls.forEach(url => {
+                        expect(url).to.be.a('string');
+                    });
+
+                    expect(val.audits).to.be.an('array');
+                    expect(val.audits.length).to.eql(1);
+                    val.audits.forEach(audit => {
+                        expect(audit).to.be.a('string');
+                    });
+
+                    expect(val.auditsData).to.be.an('array');
+                    expect(val.auditsData.length).to.eql(1);
+                    val.auditsData.forEach(audit => {
+                        expect(audit).to.be.an('object');
+                    });
+
+                    expect(val.urlsData).to.be.an('array');
+                    expect(val.urlsData.length).to.eql(1);
+                    val.urlsData.forEach(url => {
+                        expect(url).to.be.an('object');
+                        expect(url).to.have.keys('requestUrl', 'originalUrl', 'window');
+                        expect(url.requestUrl).to.be.a('string');
+                        expect(url.originalUrl).to.be.a('string');
+                        expect(url.window).to.be.an('object');
+                    });
+                });
+
+                done();
+            }).catch(done);
         });
     });
 
     // buildAudits
     describe('buildAudits', () => {
-        beforeEach(setBasicStubs);
+        it('should build audits with an array', () => {
+            const result = fns.buildAudits(['w3']);
 
-        it.skip('should buildAudits', () => {
-            // TODO: ...
+            expect(result).to.be.an('array');
+            expect(result.length).to.eql(1);
+
+            result.forEach(val => {
+                expect(val).to.be.an('object');
+                expect(val).to.have.keys(['name', 'src', 'rules', 'ignore']);
+                expect(val.name).to.be.a('string');
+                expect(val.src).to.be.a('string');
+                expect(val.rules).to.be.a('array');
+                expect(val.ignore).to.be.an('array');
+            });
+        });
+
+        it('should build audits with a string', () => {
+            const result = fns.buildAudits('w3');
+
+            expect(result).to.be.an('array');
+            expect(result.length).to.eql(1);
+
+            result.forEach(val => {
+                expect(val).to.be.an('object');
+                expect(val).to.have.keys(['name', 'src', 'rules', 'ignore']);
+                expect(val.name).to.be.a('string');
+                expect(val.src).to.be.a('string');
+                expect(val.rules).to.be.a('array');
+                expect(val.ignore).to.be.an('array');
+            });
+        });
+
+        it('should build audits with a custom source', () => {
+            const result = fns.buildAudits('./src/_test/data/custom.js');
+
+            expect(result).to.be.an('array');
+            expect(result.length).to.eql(1);
+
+            result.forEach(val => {
+                expect(val).to.be.an('object');
+                expect(val).to.have.keys(['name', 'src', 'rules', 'ignore']);
+                expect(val.name).to.be.a('string');
+                expect(val.src).to.be.a('string');
+                expect(val.rules).to.be.a('array');
+                expect(val.ignore).to.be.an('array');
+            });
+        });
+
+        it('should build audits with an array of objects', () => {
+            const result = fns.buildAudits([{
+                name: 'Custom',
+                src: './src/_test/data/custom.js',
+                ignore: ['hasBody']
+            }]);
+
+            expect(result).to.be.an('array');
+            expect(result.length).to.eql(1);
+
+            result.forEach(val => {
+                expect(val).to.be.an('object');
+                expect(val).to.have.keys(['name', 'src', 'rules', 'ignore']);
+                expect(val.name).to.be.a('string');
+                expect(val.src).to.be.a('string');
+                expect(val.rules).to.be.a('array');
+                expect(val.ignore).to.be.an('array');
+            });
         });
     });
 
-    // auditReq
-    describe('auditReq', () => {
-        beforeEach(setBasicStubs);
+    // runAudit
+    describe('runAudit', () => {
+        before(() => {
+            fns.setup(null, itTest);
+        });
 
-        it('should error without audits', (done) => {
+        it('should resolve with success', (done) => {
+            const auditsData = [
+                {
+                    name: 'foo',
+                    rules: [{
+                        name: 'bar',
+                        fn: () => new Promise((resolve) => { resolve(true); })
+                    }]
+                }
+            ];
+
+            (new Promise((resolve, reject) => fns.runAudit(auditsData, {}, resolve, reject)))
+            .then(done.bind(null, null))
+            .catch(done);
+        });
+
+        it('should error with fail', (done) => {
+            const auditsData = [
+                {
+                    name: 'foo',
+                    rules: [{
+                        name: 'bar',
+                        fn: () => (new Promise((resolve, reject) => { reject(true); }))
+                    }]
+                }
+            ];
+
+            (new Promise((resolve, reject) => fns.runAudit(auditsData, {}, resolve, reject)))
+            .then(() => { done('It should\'ve errored'); })
+            .catch(() => { done(); });
+        });
+
+        it('should error with one success and one fail', (done) => {
+            const auditsData = [
+                {
+                    name: 'foo',
+                    rules: [{
+                        name: 'bar',
+                        fn: () => new Promise((resolve, reject) => { reject(true); })
+                    }, {
+                        name: 'foobar',
+                        fn: () => new Promise((resolve) => { resolve(true); })
+                    }]
+                }
+            ];
+
+            (new Promise((resolve, reject) => fns.runAudit(auditsData, {}, resolve, reject)))
+            .then(() => { done('It should\'ve errored'); })
+            .catch(() => { done(); });
+        });
+
+        it('should error without a resolve function', (done) => {
+            const auditsData = [
+                {
+                    name: 'foo',
+                    rules: [{
+                        name: 'bar',
+                        fn: () => new Promise((resolve) => { resolve(true); })
+                    }]
+                }
+            ];
+
             try {
-                fns.auditReq(null, {});
-                done('It should\'ve errored!');
+                fns.runAudit(auditsData, {}, null, done.bind(null, null));
+                done('It should\'ve errored');
             } catch (err) {
                 done();
             }
         });
 
-        it('should error without req', (done) => {
+        it('should error without a reject function', (done) => {
+            const auditsData = [
+                {
+                    name: 'foo',
+                    rules: [{
+                        name: 'bar',
+                        fn: () => new Promise((resolve) => { resolve(true); })
+                    }]
+                }
+            ];
+
             try {
-                fns.auditReq([]);
-                done('It should\'ve errored!');
+                fns.runAudit(auditsData, {}, () => { done('It should\'ve errored'); });
+                done('It should\'ve errored');
             } catch (err) {
                 done();
             }
-        });
-
-        it('should run without audits array length', () => {
-            fns.auditReq([], { originalUrl: 'foo' });
-        });
-
-        it('should run', () => {
-            fns.auditReq([], { originalUrl: 'foo' });
         });
     });
 
     // runRule
     describe('runRule', () => {
-        beforeEach(setBasicStubs);
-
-        it('should error without an audit', (done) => {
+        it('should error without a rule', (done) => {
             try {
-                fns.runRule({});
-                done('It should\'ve errored!');
+                fns.runRule(null, {});
+                done('It should\'ve errored');
             } catch (err) {
                 done();
             }
         });
 
-        it('should run without rules array length', () => {
-            fns.runRule({}, {});
+        it('should error without a compliant rule', (done) => {
+            try {
+                fns.runRule('string', {});
+                done('It should\'ve errored');
+            } catch (err) {
+                done();
+            }
         });
 
-        it('should run', (done) => {
-            const aIt = (msg, cb) => {
-                cb = cb.bind({ timeout: () => {} }, done);
-                cb();
-            };
+        it('should error without a rule name', (done) => {
+            try {
+                fns.runRule({ fn: () => {} }, {});
+                done('It should\'ve errored');
+            } catch (err) {
+                done();
+            }
+        });
 
-            stubs({ it: aIt });
-            fns.runRule({ foo: 'foobar' }, {
-                rules: [{
-                    name: 'bar',
-                    fn: (req) => {
-                        const promise = new Promise((resolve) => {
-                            expect(req).to.be.an('object');
-                            expect(req).to.contain.keys('foo');
-                            expect(req.foo).to.be.a('string');
-                            expect(req.foo).to.eql('foobar');
+        it('should error without a rule function', (done) => {
+            try {
+                fns.runRule({ name: 'foo' }, {});
+                done('It should\'ve errored');
+            } catch (err) {
+                done();
+            }
+        });
 
-                            // Just to break the chain
-                            resolve([]);
-                        });
+        it('should succeed', (done) => {
+            fns.runRule({
+                name: 'foo',
+                fn: () => (new Promise(resolve => resolve(true)))
+            }, {})
+            .then(data => {
+                expect(data).to.be.an('object');
+                expect(data).to.have.keys(['name', 'status', 'result']);
+                expect(data.name).to.be.a('string');
+                expect(data.status).to.be.a('string');
+                expect(data.status).to.eql('passed');
+                expect(data.result).to.be.a('boolean');
+                expect(data.result).to.eql(true);
 
-                        return promise;
-                    }
-                }]
+                done();
+            })
+            .catch(done);
+        });
+
+        it('should error', (done) => {
+            fns.runRule({
+                name: 'foo',
+                fn: () => (new Promise((resolve, reject) => reject(true)))
+            }, {})
+            .then(() => done('It should\'ve errored'))
+            .catch(err => {
+                expect(err).to.be.an('object');
+                expect(err).to.have.keys(['name', 'status', 'result']);
+                expect(err.name).to.be.a('string');
+                expect(err.status).to.be.a('string');
+                expect(err.status).to.eql('failed');
+                expect(err.result).to.be.a('boolean');
+                expect(err.result).to.eql(true);
+
+                done();
             });
         });
-    });
 
-    // ruleResult
-    describe('ruleResult', () => {
-        beforeEach(setBasicStubs);
+        it('should succeed with array result', (done) => {
+            fns.runRule({
+                name: 'foo',
+                fn: () => (new Promise(resolve => {
+                    resolve([{ type: 'passed', msg: 'Foo' }]);
+                }))
+            }, {})
+            .then(data => {
+                expect(data).to.be.an('object');
+                expect(data).to.have.keys(['name', 'status', 'result']);
+                expect(data.name).to.be.a('string');
+                expect(data.status).to.be.a('string');
+                expect(data.status).to.eql('passed');
+                expect(data.result).to.be.an('array');
+                expect(data.result.length).to.eql(1);
 
-        it('should run without an array of data', (done) => {
-            fns.ruleResult(null, null, done);
+                data.result.forEach(result => {
+                    expect(result).to.be.an('object');
+                    expect(result).to.have.keys(['type', 'msg']);
+                    expect(result.type).to.be.a('string');
+                    expect(result.type).to.eql('passed');
+                    expect(result.msg).to.be.a('string');
+                    expect(result.msg).to.eql('Foo');
+                });
+
+                done();
+            })
+            .catch(done);
         });
 
-        it('should run even without length in array', (done) => {
-            fns.ruleResult({ name: 'foo' }, [], done);
+        it('should error with array result item without type', (done) => {
+            fns.runRule({
+                name: 'foo',
+                fn: () => (new Promise(resolve => {
+                    resolve([{ typo: 'passed', msg: 'Foo' }]);
+                }))
+            }, {})
+            .then(() => done('It should\'ve errored'))
+            .catch(err => {
+                expect(err).to.be.an('object');
+                expect(err).to.have.keys(['name', 'status', 'result']);
+                expect(err.name).to.be.a('string');
+                expect(err.status).to.be.a('string');
+                expect(err.status).to.eql('failed');
+                expect(err.result).to.be.an('error');
+
+                done();
+            });
         });
 
-        it('should result', (done) => {
-            fns.ruleResult({ name: 'foo' }, [{
-                msg: 'bar'
-            }], done);
+        it('should error with array result item without msg', (done) => {
+            fns.runRule({
+                name: 'foo',
+                fn: () => (new Promise(resolve => {
+                    resolve([{ type: 'passed', msga: 'Foo' }]);
+                }))
+            }, {})
+            .then(() => done('It should\'ve errored'))
+            .catch(err => {
+                expect(err).to.be.an('object');
+                expect(err).to.have.keys(['name', 'status', 'result']);
+                expect(err.name).to.be.a('string');
+                expect(err.status).to.be.a('string');
+                expect(err.status).to.eql('failed');
+                expect(err.result).to.be.an('error');
+
+                done();
+            });
         });
 
-        it('should error if data tells so', (done) => {
-            const aIt = (msg, cb) => {
+        it('should warn in case of type warning', (done) => {
+            fns.setup(null, null, (name, msg, raw) => {
+                expect(name).to.be.a('string');
+                expect(name).to.eql('foo');
                 expect(msg).to.be.a('string');
-                expect(msg).to.contain('bar');
+                expect(msg).to.eql('Foo');
+                expect(raw).to.be.a('object');
+                expect(raw).to.have.keys(['bar']);
+            });
 
-                try {
-                    // Callback now
-                    cb();
-                    done('It should\'ve errored!');
-                } catch (err) {
-                    done();
-                }
-            };
+            fns.runRule({
+                name: 'foo',
+                fn: () => (new Promise(resolve => {
+                    resolve([{ type: 'warning', msg: 'Foo', raw: { bar: 'foo' } }]);
+                }))
+            }, {})
+            .then(data => {
+                expect(data).to.be.an('object');
+                expect(data).to.have.keys(['name', 'status', 'result']);
+                expect(data.name).to.be.a('string');
+                expect(data.status).to.be.a('string');
+                expect(data.status).to.eql('passed');
+                expect(data.result).to.be.an('array');
+                expect(data.result.length).to.eql(1);
 
-            stubs({ it: aIt });
-            fns.ruleResult({ name: 'foo' }, [{
-                msg: 'bar',
-                type: 'error'
-            }], () => {});
+                data.result.forEach(result => {
+                    expect(result).to.be.an('object');
+                    expect(result).to.have.keys(['type', 'msg', 'raw']);
+                    expect(result.type).to.be.a('string');
+                    expect(result.type).to.eql('warning');
+                    expect(result.msg).to.be.a('string');
+                    expect(result.msg).to.eql('Foo');
+                });
+
+                // It still should succeed
+                done();
+            })
+            .catch(done);
         });
 
-        it.skip('should warning if data tells so', (done) => {
-            // TODO: We need a way to set the logging stubs
-            const aLogger = {
-                warn: (mod, data) => {
-                    expect(mod).to.be.a('string');
-                    expect(mod).to.eql('foo');
-                    expect(data).to.be.an('object');
-                    expect(data).to.contain.keys(['msg', 'type']);
-                    expect(data.msg).to.eql('bar');
-                    expect(data.type).to.eql('warning');
-                }
-            };
-
-            stubs({ logger: aLogger });
-            fns.ruleResult({ name: 'foo' }, [{
-                msg: 'bar',
-                type: 'warning'
-            }], done);
+        after(() => {
+            fns.setup(null, null, null, true);
         });
     });
 });

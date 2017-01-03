@@ -77,18 +77,15 @@ const getDom = (url) => {
 const run = (data) => {
     const urls = typeof data.urls === 'string' ? [data.urls] : data.urls;
     const reqUrls = getReqUrls(urls, data.base, data.baseEnv);
-    const urlsPromises = reqUrls.map((req) => {
-        // Request DOM of each
-        return getDom(req.requestUrl)
-        .then((window) => {
-            req.window = window;
-            return req;
-        })
-        .catch((err) => {
-            req.err = err;
-            throw req;
-        });
-    });
+    const urlsPromises = reqUrls.map((req) => getDom(req.requestUrl)
+    .then((window) => {
+        req.window = window;
+        return req;
+    })
+    .catch((err) => {
+        req.err = err;
+        throw req;
+    }));
 
     return Promise.all(urlsPromises);
 };

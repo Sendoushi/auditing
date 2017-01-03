@@ -1,102 +1,152 @@
 #!/usr/bin/env node
 
 'use strict';
-/* global describe, it, Promise */
+/* global Promise */
 
 import { argv } from 'yargs';
-import scraper from './scraper.js';
+import merge from 'lodash/merge.js';
+import isArray from 'lodash/isArray.js';
+import { run as runScraper } from './scraper.js';
 import { get as configGet } from './config.js';
 import { getPwd } from './utils.js';
 
 // Import modules
 const modules = {
-    w3: require('./modules/w3.js'),
-    wcag: require('./modules/wcag.js'),
-    SEO: require('./modules/seo.js'),
-    lighthouse: require('./modules/lighthouse.js'),
-    stylelint: require('./modules/stylelint.js'),
-    eslint: require('./modules/eslint.js')
+    w3: require('./modules/w3.js')
+    // TODO: Take care of these modules to be compliant...
+    // wcag: require('./modules/wcag.js'),
+    // SEO: require('./modules/seo.js'),
+    // lighthouse: require('./modules/lighthouse.js')
 };
+
+let logWarn;
+let desTest;
+let itTest;
 
 //-------------------------------------
 // Functions
 
 /**
- * Takes care of rule result
+ * Runs the rule
  *
  * @param {object} rule
- * @param {object} data
- * @param {function} done
+ * @param {object} url
+ * @returns
  */
-const ruleResult = (rule, data, done) => {
-    if (!data || typeof data !== 'object' || !data.hasOwnProperty.length) {
-        return done();
+const runRule = (rule = {}, url = {}) => {
+    if (typeof rule !== 'object' || isArray(rule)) {
+        throw new Error('A rule needs to be an object');
     }
 
-    // Iterate array...
-    describe(`${rule.name}: Nested...`, () => {
-        data.forEach((res) => {
-            it(res.msg, () => {
-                if (res.type === 'error') {
-                    throw res;
-                } else if (res.type === 'warning') {
-                    /* eslint-disable no-console */
-                    console.warn(rule.name, res);
-                    /* eslint-enable no-console */
+    if (!rule.name || typeof rule.name !== 'string') {
+        throw new Error('A rule needs a string name');
+    }
+
+    if (!rule.fn || typeof rule.fn !== 'function') {
+        throw new Error('A rule needs a function fn');
+    }
+
+    return rule.fn(url).then(ruleData => {
+        // Lets see if there is a warning...
+        if (isArray(ruleData)) {
+            ruleData.forEach(single => {
+                if (!single || typeof single !== 'object') {
+                    throw new Error('Rule array result item should be an object');
+                }
+
+                if (!single.type || typeof single.type !== 'string') {
+                    throw new Error('Rule array result item should have a string type');
+                }
+
+                if (!single.msg || typeof single.msg !== 'string') {
+                    throw new Error('Rule array result item should have a string msg');
+                }
+
+                if (single.type === 'warning') {
+                    logWarn(rule.name, single.msg, single.raw);
                 }
             });
+        }
+
+        const newRule = merge({
+            name: rule.name,
+            status: 'passed',
+            result: ruleData
         });
 
-        done();
+        // Ready
+        return newRule;
+    })
+    .catch(err => {
+        const newRule = {
+            name: rule.name,
+            status: 'failed',
+            result: err
+        };
+
+        // Ready
+        throw newRule;
     });
 };
 
 /**
- * Run single rule
+ * Runs audit
  *
- * @param {object} req
- * @param {object} audit
+ * @param {object} auditsData
+ * @param {object} url
+ * @param {function} resolve
+ * @param {function} reject
+ * @returns
  */
-const runRule = (req, audit) => {
-    if (!audit || typeof audit !== 'object') {
-        throw new Error('You need a valid audit object');
+const runAudit = (auditsData = [], url = {}, resolve, reject) => {
+    let allDone = 0;
+    let promisesCount = 0;
+    const audits = {};
+
+    if (typeof resolve !== 'function' || typeof reject !== 'function') {
+        throw new Error('Resolve and reject functions need to be provided');
     }
 
-    audit.rules = audit.rules || [];
+    // We need to know how many rules there are
+    auditsData.forEach(audit => { promisesCount += (audit.rules || []).length; });
 
-    // Now lets go through rules
-    audit.rules.forEach((rule) => {
-        it(rule.name, function (done) {
+    if (!auditsData.length || promisesCount === 0) {
+        resolve(audits);
+    }
+
+    // Lets go per audit...
+    auditsData.forEach(audit => {
+        audits[audit.name] = [];
+
+        desTest(`Audit: ${audit.name}`, () => audit.rules.forEach(rule => itTest(`Rule: ${rule.name}`, function (done) {
             this.timeout(20000);
 
-            rule.fn(req)
-            .then(data => ruleResult(rule, data, done))
-            .catch(err => ruleResult(rule, err, done));
-        });
+            // Lets run the rule
+            runRule(rule, url)
+            .then(newRule => {
+                // Ready
+                audits[audit.name].push(newRule);
+                done();
+
+                allDone += 1;
+                if (allDone === promisesCount) { resolve(audits); }
+
+                return newRule;
+            })
+            .catch(newRule => {
+                const err = newRule.result;
+
+                // Ready
+                audits[audit.name].push(newRule);
+                done(err instanceof Error ? err : new Error(JSON.stringify(err, null, 4)));
+
+                allDone += 1;
+                if (allDone === promisesCount) { reject(audits); }
+            });
+        })));
     });
-};
 
-/**
- * Audit request
- *
- * @param {array} audits
- * @param {object} req
- */
-const auditReq = (audits, req) => {
-    if (!audits || typeof audits !== 'object') {
-        throw new Error('You need a valid audits list');
-    }
-
-    if (!req || typeof req !== 'object') {
-        throw new Error('You need a valid req');
-    }
-
-    describe(`Auditing: ${req.originalUrl}`, () => {
-        // Go through each audit
-        audits.forEach((audit) => {
-            describe(`Audit: ${audit.name}`, runRule.bind(null, req, audit));
-        });
-    });
+    return audits;
 };
 
 /**
@@ -107,8 +157,36 @@ const auditReq = (audits, req) => {
  */
 const buildAudits = (audits) => {
     audits = (typeof audits === 'string') ? [audits] : audits;
-    return audits.map(mod => modules[mod] || require(getPwd(mod)))
-    .filter(val => !!val);
+    audits = audits.map(val => {
+        val = (typeof val === 'object') ? val : { src: val };
+
+        // Lets require
+        let mod = modules[val.src] || require(getPwd(val.src));
+        mod = (typeof mod === 'object' && mod.default) ? mod.default : mod;
+
+        // Now set all as should
+        val.name = mod.name;
+        val.rules = mod.rules.map((rule) => {
+            if (typeof rule !== 'object' || isArray(rule)) {
+                throw new Error('A rule needs to be an object');
+            }
+
+            if (!rule.name) {
+                throw new Error('A rule needs a name');
+            }
+
+            if (!rule.fn) {
+                throw new Error('A rule needs a function');
+            }
+
+            return rule;
+        });
+        val.ignore = val.ignore || [];
+
+        return val;
+    });
+
+    return audits;
 };
 
 /**
@@ -117,37 +195,46 @@ const buildAudits = (audits) => {
  * @param {array} data
  * @returns {promise}
  */
-const gatherData = (data) => {
-    const promises = [];
+const gatherData = (data = []) => new Promise((resolve, reject) => {
+    const reqData = [];
+    const promisesCount = data.length;
+    let allDone = 0;
+
+    // No need to go further without data
+    if (!data.length) { return resolve(); }
 
     // Go through each request
-    data.forEach((req) => {
-        const promise = new Promise((resolve, reject) => {
-            describe('Requesting urls', () => {
-                it('Gathering data...', function (done) {
-                    this.timeout(10000);
+    data.forEach((req) => desTest('Requesting urls', () => itTest('Gathering data...', function (done) {
+        this.timeout(10000);
 
-                    // Get the DOM
-                    scraper.run(req).then((scrapData) => {
-                        req.auditsData = buildAudits(req.audits);
-                        req.urlsData = scrapData;
-
-                        // Ready
-                        resolve(req);
-                        done();
-                        return req;
-                    })
-                    .catch((err) => { reject(err); done(err); });
-                });
+        // Lets get the scraper data
+        runScraper(req).then((scrapData) => {
+            const newReq = merge(req, {
+                auditsData: buildAudits(req.audits),
+                urlsData: scrapData
             });
+
+            // Ready
+            reqData.push(newReq);
+            done();
+
+            allDone += 1;
+            if (allDone === promisesCount) { resolve(reqData); }
+
+            return newReq;
+        })
+        .catch((err) => {
+            const newReq = merge(req, { err });
+
+            // Ready
+            reqData.push(newReq);
+            done(err);
+
+            allDone += 1;
+            if (allDone === promisesCount) { reject(reqData); }
         });
-
-        // Cache it...
-        promises.push(promise);
-    });
-
-    return Promise.all(promises);
-};
+    })));
+});
 
 /**
  * Initialize audits
@@ -160,29 +247,78 @@ const run = (config) => {
 
     // Lets gather data from the urls
     return gatherData(config.data)
-    .then((data) => {
-        const promises = [];
-
+    .then(data => new Promise((resolve, reject) => {
         // Go through each element in data
         // Lets run audits per request
-        data.forEach((req) => req.urlsData.forEach((url) => promises.push(auditReq(req.auditsData, url))));
+        data.forEach(req => req.urlsData.forEach(url => {
+            desTest(`Auditing: ${url.originalUrl}`, () => {
+                runAudit(req.auditsData, url, resolve, reject);
+            });
+        }));
+    }));
+};
 
-        return Promise.all(promises);
-    })
-    .catch((err) => { throw err; });
+/**
+ * Sets up the testing environment
+ *
+ * @param {function} newDes
+ * @param {function} newIt
+ * @param {function} newWarn
+ * @param {boolean} reset
+ */
+const setup = (newDes, newIt, newWarn, reset) => {
+    if (newDes && typeof newDes !== 'function') {
+        throw new Error('Describe needs to be a function');
+    }
+
+    if (newIt && typeof newIt !== 'function') {
+        throw new Error('It needs to be a function');
+    }
+
+    if (newWarn && typeof newWarn !== 'function') {
+        throw new Error('Warn needs to be a function');
+    }
+
+    // Reset
+    if (reset) {
+        desTest = itTest = logWarn = null;
+    }
+
+    desTest = newDes || desTest || function (msg, cb) {
+        cb();
+    };
+
+    itTest = newIt || itTest || function (msg, cb) {
+        const module = {
+            done: (err) => {
+                if (err) {
+                    throw err;
+                }
+            },
+            timeout: () => {}
+        };
+
+        cb.bind(module)(module.done);
+    };
+
+    /* eslint-disable no-console */
+    logWarn = newWarn || logWarn || function (module, ...msg) { console.warn(module, ...msg); };
+    /* eslint-enable no-console */
 };
 
 //-------------------------------------
 // Runtime
 
+if (argv && argv.mocha) {
+    /* eslint-disable no-undef */
+    setup(describe, it);
+    /* eslint-enable no-undef */
+} else {
+    setup();
+}
 argv && argv.config && run(argv.config);
+export { setup };
 export { run };
 
 // Essentially for testing purposes
-export const __testMethods__ = { run, gatherData, buildAudits, auditReq, runRule, ruleResult };
-export const __testStubs__ = (stubs) => {
-    /* eslint-disable no-native-reassign */
-    describe = stubs.describe || describe;
-    it = stubs.it || it;
-    /* eslint-enable no-native-reassign */
-};
+export const __testMethods__ = { run, setup, gatherData, buildAudits, runAudit, runRule };

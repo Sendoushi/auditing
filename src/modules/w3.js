@@ -24,12 +24,10 @@ const isCompliant = (req) => {
     })
     .then((data) => {
         // Parse it as we expect it
-        data = data.map((val) => ({ type: val.type, msg: val.message, original: val }));
+        data = data.map((val) => ({ type: val.type, msg: val.message, raw: val }));
 
         // Lets see if there is any error
-        data.forEach(val => {
-            if (val.type === 'error') { throw data; }
-        });
+        data.forEach(val => { if (val.type === 'error') { throw val; } });
 
         return data;
     });

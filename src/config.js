@@ -8,7 +8,13 @@ const STRUCT = Joi.object().keys({
     projectName: Joi.string().default('Project Name'),
     data: Joi.array().items(Joi.object().keys({
         urls: Joi.array().items(Joi.string()).required(),
-        audits: Joi.array().items(Joi.string()).default(['w3', 'SEO']),
+        audits: Joi.array().items(Joi.alternatives().try(
+            Joi.string(),
+            Joi.object().keys({
+                src: Joi.string().required(),
+                ignore: Joi.array().items(Joi.string())
+            })
+        )),
         base: Joi.string(),
         baseEnv: Joi.string()
     })).default([])

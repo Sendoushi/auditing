@@ -1,10 +1,10 @@
 {
-  "name": "bedrock-audit",
-  "version": "0.0.1",
-  "description": "Audits to use on frontend",
+  "name": "auditing",
+  "version": "0.0.2",
+  "description": "Set the audits once and just run the tests",
   "repository": {
     "type": "git",
-    "url": "git@bitbucket.org:sendoushi/bedrock-audit.git"
+    "url": "git@github.com:Sendoushi/auditing.git"
   },
   "authors": [
     "Joel Santos <joel@sendoushi.com>"
@@ -17,10 +17,11 @@
     "clean": "rm -rf dist/*",
     "test": "npm run eslint && npm run mocha",
     "eslint": "eslint ./src/**/*.js",
-    "mocha": "BABEL_ENV=test mocha ./test/test.js --compilers js:babel-core/register",
+    "mocha": "BABEL_ENV=test mocha ./src/**/*.spec.js --compilers js:babel-core/register",
     "prebuild": "npm run clean && npm run test",
     "build": "BABEL_ENV=production babel src --out-dir dist --source-maps inline --ignore *.spec.js,_test/**/*",
-    "prepublish": "npm run test"
+    "prepublish": "npm run test",
+    "audit-test": "export AUDIT_BASE=\"http://google.pt\" && mocha ./src/index.js --compilers js:babel-core/register --mocha=true --config=\"./src/_test/data/config_basic.json\""
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",
@@ -32,7 +33,6 @@
     "eslint": "^2.0.0",
     "eslint-config-defaults": "^9.0.0",
     "eslint-plugin-react": "^6.2.0",
-    "glob": "^7.1.1",
     "lodash": "^4.17.4"
   },
   "dependencies": {

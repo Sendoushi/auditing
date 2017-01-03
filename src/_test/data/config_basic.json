@@ -1,0 +1,11 @@
+{
+    "projectId": "test",
+    "projectName": "Test",
+    "data": [{
+        "urls": ["http://google.pt"],
+        "audits": ["./src/_test/data/custom.js", {
+            "src": "./src/_test/data/custom.js",
+            "ignore": ["hasBody"]
+        }]
+    }]
+}
