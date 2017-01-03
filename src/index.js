@@ -30,11 +30,11 @@ let itTest;
  * Runs the rule
  *
  * @param {object} rule
- * @param {object} url
+ * @param {object} src
  * @param {array} ignore
  * @returns
  */
-const runRule = (rule = {}, url = {}, ignore = []) => {
+const runRule = (rule = {}, src = {}, ignore = []) => {
     if (typeof rule !== 'object' || isArray(rule)) {
         throw new Error('A rule needs to be an object');
     }
@@ -48,7 +48,7 @@ const runRule = (rule = {}, url = {}, ignore = []) => {
     }
 
     // Lets run the promise and parse the data
-    return rule.fn(url).then(ruleData => merge({
+    return rule.fn(src).then(ruleData => merge({
         name: rule.name,
         status: 'passed',
         result: ruleData
@@ -138,12 +138,12 @@ const runRule = (rule = {}, url = {}, ignore = []) => {
  * Runs audit
  *
  * @param {object} auditsData
- * @param {object} url
+ * @param {object} src
  * @param {function} resolve
  * @param {function} reject
  * @returns
  */
-const runAudit = (auditsData = [], url = {}, resolve, reject) => {
+const runAudit = (auditsData = [], src = {}, resolve, reject) => {
     let allDone = 0;
     let promisesCount = 0;
     const audits = {};
@@ -186,7 +186,7 @@ const runAudit = (auditsData = [], url = {}, resolve, reject) => {
                 this.timeout(20000);
 
                 // Lets run the rule
-                runRule(rule, url, audit.ignore)
+                runRule(rule, src, audit.ignore)
                 .then(newRule => {
                     // Ready
                     audits[audit.name].push(newRule);
@@ -269,14 +269,14 @@ const gatherData = (data = []) => new Promise((resolve, reject) => {
     if (!data.length) { return resolve(); }
 
     // Go through each request
-    data.forEach((req) => desTest('Requesting urls', () => itTest('Gathering data...', function (done) {
+    data.forEach((req) => desTest('Requesting src', () => itTest('Gathering data...', function (done) {
         this.timeout(10000);
 
         // Lets get the scraper data
         runScraper(req).then((scrapData) => {
             const newReq = merge(req, {
                 auditsData: buildAudits(req.audits),
-                urlsData: scrapData
+                srcData: scrapData
             });
 
             // Ready
@@ -310,14 +310,14 @@ const gatherData = (data = []) => new Promise((resolve, reject) => {
 const run = (config) => {
     config = configGet(config);
 
-    // Lets gather data from the urls
+    // Lets gather data from the src
     return gatherData(config.data)
     .then(data => new Promise((resolve, reject) => {
         // Go through each element in data
         // Lets run audits per request
-        data.forEach(req => req.urlsData.forEach(url => {
-            desTest(`Auditing: ${url.originalUrl}`, () => {
-                runAudit(req.auditsData, url, resolve, reject);
+        data.forEach(req => req.srcData.forEach(src => {
+            desTest(`Auditing: ${src.originalSrc}`, () => {
+                runAudit(req.auditsData, src, resolve, reject);
             });
         }));
     }));

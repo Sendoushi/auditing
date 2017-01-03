@@ -2,7 +2,8 @@
     "projectId": "test",
     "projectName": "Test",
     "data": [{
-        "urls": ["http://google.pt"],
+        "src": ["http://google.pt"],
+        "type": "url",
         "audits": ["./src/_test/data/custom.js", {
             "src": "./src/_test/data/custom.js",
             "ignore": ["hasBody"]

@@ -141,7 +141,8 @@ describe('audit.index', () => {
 
         it('should gather data', function (done) {
             const config = [{
-                urls: ['http://google.pt'],
+                src: ['http://google.pt'],
+                type: 'url',
                 audits: ['w3']
             }];
 
@@ -155,11 +156,11 @@ describe('audit.index', () => {
 
                 data.forEach(val => {
                     expect(val).to.be.an('object');
-                    expect(val).to.have.keys('urls', 'audits', 'auditsData', 'urlsData');
+                    expect(val).to.have.keys('src', 'type', 'audits', 'auditsData', 'srcData');
 
-                    expect(val.urls).to.be.an('array');
-                    expect(val.urls.length).to.eql(1);
-                    val.urls.forEach(url => {
+                    expect(val.src).to.be.an('array');
+                    expect(val.src.length).to.eql(1);
+                    val.src.forEach(url => {
                         expect(url).to.be.a('string');
                     });
 
@@ -175,13 +176,13 @@ describe('audit.index', () => {
                         expect(audit).to.be.an('object');
                     });
 
-                    expect(val.urlsData).to.be.an('array');
-                    expect(val.urlsData.length).to.eql(1);
-                    val.urlsData.forEach(url => {
+                    expect(val.srcData).to.be.an('array');
+                    expect(val.srcData.length).to.eql(1);
+                    val.srcData.forEach(url => {
                         expect(url).to.be.an('object');
-                        expect(url).to.have.keys('requestUrl', 'originalUrl', 'window');
-                        expect(url.requestUrl).to.be.a('string');
-                        expect(url.originalUrl).to.be.a('string');
+                        expect(url).to.have.keys('requestSrc', 'originalSrc', 'window');
+                        expect(url.requestSrc).to.be.a('string');
+                        expect(url.originalSrc).to.be.a('string');
                         expect(url.window).to.be.an('object');
                     });
                 });

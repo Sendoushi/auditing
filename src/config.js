@@ -7,7 +7,8 @@ const STRUCT = Joi.object().keys({
     projectId: Joi.string().default('projectname'),
     projectName: Joi.string().default('Project Name'),
     data: Joi.array().items(Joi.object().keys({
-        urls: Joi.array().items(Joi.string()).required(),
+        src: Joi.array().items(Joi.string()).required(),
+        type: Joi.string().valid(['url', 'content', 'file']).required(),
         audits: Joi.array().items(Joi.alternatives().try(
             Joi.string(),
             Joi.object().keys({

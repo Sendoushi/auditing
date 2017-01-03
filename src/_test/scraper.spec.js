@@ -24,10 +24,11 @@ describe('audit.scraper', () => {
 
             expect(result).to.be.an('array');
             expect(result).to.have.length(urls.length);
+
             expect(result[0]).to.be.an('object');
-            expect(result[0]).to.have.keys(['requestUrl', 'originalUrl']);
-            expect(result[0].requestUrl).to.equal(urls[0]);
-            expect(result[0].originalUrl).to.equal(urls[0]);
+            expect(result[0]).to.have.keys(['requestSrc', 'originalSrc']);
+            expect(result[0].requestSrc).to.equal(urls[0]);
+            expect(result[0].originalSrc).to.equal(urls[0]);
         });
 
         it('should get an array with base', () => {
@@ -37,37 +38,45 @@ describe('audit.scraper', () => {
             expect(result).to.be.an('array');
             expect(result).to.have.length(urls.length);
             expect(result[0]).to.be.an('object');
-            expect(result[0]).to.have.keys(['requestUrl', 'originalUrl']);
-            expect(result[0].requestUrl).to.contain('http://');
-            expect(result[0].requestUrl).to.contain(urls[0]);
-            expect(result[0].originalUrl).to.equal(urls[0]);
+            expect(result[0]).to.have.keys(['requestSrc', 'originalSrc']);
+            expect(result[0].requestSrc).to.contain('http://');
+            expect(result[0].requestSrc).to.contain(urls[0]);
+            expect(result[0].originalSrc).to.equal(urls[0]);
         });
 
         it('should get an array with environment variable', () => {
             const urls = ['www.google.com', 'google.com'];
 
             // Prepare the env
-            process.env.BEDROCK_AUDIT_BASE = 'http://';
+            process.env.AUDIT_BASE = 'http://';
 
             // Lets test
-            const result = fns.getReqUrls(urls, null, 'BEDROCK_AUDIT_BASE');
+            const result = fns.getReqUrls(urls, null, 'AUDIT_BASE');
 
             expect(result).to.be.an('array');
             expect(result).to.have.length(urls.length);
             expect(result[0]).to.be.an('object');
-            expect(result[0]).to.have.keys(['requestUrl', 'originalUrl']);
-            expect(result[0].requestUrl).to.contain('http://');
-            expect(result[0].requestUrl).to.contain(urls[0]);
-            expect(result[0].originalUrl).to.equal(urls[0]);
+            expect(result[0]).to.have.keys(['requestSrc', 'originalSrc']);
+            expect(result[0].requestSrc).to.contain('http://');
+            expect(result[0].requestSrc).to.contain(urls[0]);
+            expect(result[0].originalSrc).to.equal(urls[0]);
         });
     });
 
     // getDom
     describe('getDom', () => {
-        it('should get a window with DOM', function (done) {
+        it('should get a window with DOM using url', function (done) {
             this.timeout(10000);
 
-            fns.getDom('http://www.google.com')
+            fns.getDom('http://www.google.com', 'url')
+            .then(window => !!window && !!window.document ? done() : done('No window found!'))
+            .catch(done);
+        });
+
+        it('should get a window with DOM using a string', function (done) {
+            this.timeout(10000);
+
+            fns.getDom('<html><body><h1>Headline</h1></body></html>')
             .then(window => !!window && !!window.document ? done() : done('No window found!'))
             .catch(done);
         });
@@ -75,13 +84,13 @@ describe('audit.scraper', () => {
         it('should set jquery in window', function (done) {
             this.timeout(10000);
 
-            fns.getDom('http://www.google.com')
+            fns.getDom('<html><body><h1>Headline</h1></body></html>')
             .then(window => !!window && !!window.$ ? done() : done('No jquery found!'))
             .catch(done);
         });
 
         it('should error without a valid url', (done) => {
-            fns.getDom('www.google.com')
+            fns.getDom('www.google.com', 'url')
             .then(() => done('It should\'ve errored with an invalid url!'))
             .catch((err) => !!err ? done() : done('Where is the error?'));
         });
@@ -94,7 +103,7 @@ describe('audit.scraper', () => {
 
             this.timeout(5000);
 
-            fns.run({ urls })
+            fns.run({ src: urls, type: 'url' })
             .then((result) => {
                 expect(result).to.be.an('array');
                 expect(result).to.have.length(urls.length);
@@ -104,8 +113,8 @@ describe('audit.scraper', () => {
                 }
 
                 expect(result[0]).to.be.an('object');
-                expect(result[0]).to.have.keys(['requestUrl', 'originalUrl', 'window']);
-                expect(result[0].originalUrl).to.equal(urls[0]);
+                expect(result[0]).to.have.keys(['requestSrc', 'originalSrc', 'window']);
+                expect(result[0].originalSrc).to.equal(urls[0]);
 
                 done();
             })
@@ -117,7 +126,7 @@ describe('audit.scraper', () => {
 
             this.timeout(5000);
 
-            fns.run({ urls, base: 'http://' })
+            fns.run({ src: urls, type: 'url', base: 'http://' })
             .then((result) => {
                 expect(result).to.be.an('array');
                 expect(result).to.have.length(urls.length);
@@ -127,8 +136,8 @@ describe('audit.scraper', () => {
                 }
 
                 expect(result[0]).to.be.an('object');
-                expect(result[0]).to.have.keys(['requestUrl', 'originalUrl', 'window']);
-                expect(result[0].originalUrl).to.equal(urls[0]);
+                expect(result[0]).to.have.keys(['requestSrc', 'originalSrc', 'window']);
+                expect(result[0].originalSrc).to.equal(urls[0]);
 
                 done();
             })

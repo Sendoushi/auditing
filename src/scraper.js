@@ -3,6 +3,7 @@
 
 import jsdom from 'jsdom';
 import { isUrl } from './utils.js';
+import { getPwd } from './utils.js';
 
 //-------------------------------------
 // Functions
@@ -35,7 +36,7 @@ const getReqUrls = (urls, base, baseEnv) => {
         }
 
         // Construct object
-        return { requestUrl: reqUrl, originalUrl: url };
+        return { requestSrc: reqUrl, originalSrc: url };
     });
 
     return urls;
@@ -44,29 +45,26 @@ const getReqUrls = (urls, base, baseEnv) => {
 /**
  * Gets DOM from url
  *
- * @param {string} url
+ * @param {string} src
+ * @param {string} type
  * @returns {promise}
  */
-const getDom = (url) => {
-    const promise = new Promise((resolve, reject) => {
-        // Need to check if url is ok
-        if (!isUrl(url)) {
-            return reject(new Error('Url not valid'));
+const getDom = (src, type) => new Promise((resolve, reject) => {
+    // Need to check if url is ok
+    if (type === 'url' && !isUrl(src)) {
+        return reject(new Error('Url not valid'));
+    }
+
+    // Set jsdom...
+    jsdom.env(src, ['http://code.jquery.com/jquery.js'], (err, window) => {
+        if (err) {
+            return reject(err);
         }
 
-        // Set jsdom...
-        jsdom.env(url, ['http://code.jquery.com/jquery.js'], (err, window) => {
-            if (err) {
-                return reject(err);
-            }
-
-            // Cache the window
-            resolve(window);
-        });
+        // Cache the window
+        resolve(window);
     });
-
-    return promise;
-};
+});
 
 /**
  * Scrapes
@@ -75,9 +73,20 @@ const getDom = (url) => {
  * @returns {promise}
  */
 const run = (data) => {
-    const urls = typeof data.urls === 'string' ? [data.urls] : data.urls;
-    const reqUrls = getReqUrls(urls, data.base, data.baseEnv);
-    const urlsPromises = reqUrls.map((req) => getDom(req.requestUrl)
+    const src = typeof data.src === 'string' ? [data.src] : data.src;
+    let reqSrc = src;
+
+    // Lets parse sources into what we're expecting
+    if (data.type === 'url') {
+        reqSrc = getReqUrls(reqSrc, data.base, data.baseEnv);
+    } else if (data.type === 'file') {
+        reqSrc = reqSrc.map(val => ({ requestSrc: require(getPwd(val)), originalSrc: val }));
+    } else {
+        reqSrc = reqSrc.map(val => ({ requestSrc: val, originalSrc: val }));
+    }
+
+    // Finally lets set the promises
+    const urlsPromises = reqSrc.map((req) => getDom(req.requestSrc, data.type)
     .then((window) => {
         req.window = window;
         return req;

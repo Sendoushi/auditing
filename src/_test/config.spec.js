@@ -23,9 +23,10 @@ describe('audit.config', () => {
             expect(result.data).to.have.length.above(1);
 
             result.data.forEach(val => {
-                expect(val).to.contain.all.keys(['urls', 'audits']);
-                expect(val).to.contain.any.keys('urls', 'audits', 'base', 'baseEnv');
-                expect(val.urls).to.be.an('array');
+                expect(val).to.contain.all.keys(['src', 'audits', 'type']);
+                expect(val).to.contain.any.keys('src', 'audits', 'base', 'baseEnv');
+                expect(val.src).to.be.an('array');
+                expect(val.type).to.be.a('string');
                 expect(val.audits).to.be.an('array');
             });
         });
@@ -40,9 +41,10 @@ describe('audit.config', () => {
             expect(result.data).to.have.length(configObj.data.length);
 
             result.data.forEach(val => {
-                expect(val).to.contain.all.keys(['urls', 'audits']);
-                expect(val).to.contain.any.keys('urls', 'audits', 'base', 'baseEnv');
-                expect(val.urls).to.be.an('array');
+                expect(val).to.contain.all.keys(['src', 'audits', 'type']);
+                expect(val).to.contain.any.keys('src', 'audits', 'base', 'baseEnv');
+                expect(val.src).to.be.an('array');
+                expect(val.type).to.be.a('string');
                 expect(val.audits).to.be.an('array');
             });
         });

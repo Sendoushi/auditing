@@ -11,7 +11,7 @@ The runner is based on [mocha](https://mochajs.org/).
 
 - Install [node](http://nodejs.org)
 
-```
+```sh
 cd <project_folder>
 npm init # If you don't have a package.json already
 npm install --save-dev auditing
@@ -69,7 +69,8 @@ This repo relies on usage of `*.json` config files. Below I try to explain how t
     "projectId": "<project_id>",
     "projectName": "<project_name>",
     "data": [{
-        "urls": ["<url_path>"],
+        "src": ["<url_path>", "<content>", "<file>"],
+        "type": "url|content|file",
         "audits": ["<path_to_custom>", {
             "name": "Custom",
             "src": "<path_to_custom>",
@@ -82,6 +83,9 @@ This repo relies on usage of `*.json` config files. Below I try to explain how t
     }]
 }
 ```
+
+**Note:**
+- `base` and `baseEnv` are used only when in `url` type
 
 ### Examples
 Go under the [src/_test/data](src/_test/data) folder and check the `*.json`.
