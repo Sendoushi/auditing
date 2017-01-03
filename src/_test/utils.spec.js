@@ -109,4 +109,31 @@ describe('audit.utils', () => {
             });
         });
     });
+
+    // contains
+    describe('contains', () => {
+        it('should return true if matches', () => {
+            const result = fns.contains(['foo'], 'foobar');
+            expect(result).to.be.a('boolean');
+            expect(result).to.be.eql(true);
+        });
+
+        it('should return true if matches and the checked is a string', () => {
+            const result = fns.contains('foo', 'foobar');
+            expect(result).to.be.a('boolean');
+            expect(result).to.be.eql(true);
+        });
+
+        it('should return false if it doesn\'t match', () => {
+            const result = fns.contains('foo', 'bar');
+            expect(result).to.be.a('boolean');
+            expect(result).to.be.eql(false);
+        });
+
+        it('should return false with non string value', () => {
+            const result = fns.contains(['foo'], true);
+            expect(result).to.be.a('boolean');
+            expect(result).to.be.eql(false);
+        });
+    });
 });

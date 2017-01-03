@@ -8,7 +8,7 @@ import merge from 'lodash/merge.js';
 import isArray from 'lodash/isArray.js';
 import { run as runScraper } from './scraper.js';
 import { get as configGet } from './config.js';
-import { getPwd } from './utils.js';
+import { getPwd, contains } from './utils.js';
 
 // Import modules
 const modules = {
@@ -31,9 +31,10 @@ let itTest;
  *
  * @param {object} rule
  * @param {object} url
+ * @param {array} ignore
  * @returns
  */
-const runRule = (rule = {}, url = {}) => {
+const runRule = (rule = {}, url = {}, ignore = []) => {
     if (typeof rule !== 'object' || isArray(rule)) {
         throw new Error('A rule needs to be an object');
     }
@@ -46,46 +47,90 @@ const runRule = (rule = {}, url = {}) => {
         throw new Error('A rule needs a function fn');
     }
 
-    return rule.fn(url).then(ruleData => {
-        // Lets see if there is a warning...
-        if (isArray(ruleData)) {
-            ruleData.forEach(single => {
-                if (!single || typeof single !== 'object') {
-                    throw new Error('Rule array result item should be an object');
-                }
-
-                if (!single.type || typeof single.type !== 'string') {
-                    throw new Error('Rule array result item should have a string type');
-                }
-
-                if (!single.msg || typeof single.msg !== 'string') {
-                    throw new Error('Rule array result item should have a string msg');
-                }
-
-                if (single.type === 'warning') {
-                    logWarn(rule.name, single.msg, single.raw);
-                }
-            });
+    // Lets run the promise and parse the data
+    return rule.fn(url).then(ruleData => merge({
+        name: rule.name,
+        status: 'passed',
+        result: ruleData
+    }))
+    .catch(err => ({
+        name: rule.name,
+        status: 'failed',
+        result: err
+    }))
+    .then(data => {
+        // Is this ignored already?
+        if (contains(ignore, data.name)) {
+            return {
+                name: data.name,
+                status: 'ignored',
+                result: false
+            };
         }
 
-        const newRule = merge({
-            name: rule.name,
-            status: 'passed',
-            result: ruleData
+        // There was an error before
+        if (data.status === 'failed') {
+            throw data;
+        }
+
+        // No need to go further without an array
+        if (!isArray(data.result)) {
+            return data;
+        }
+
+        // Lets check for nestedissues...
+        let nestedError = false;
+        data.result = data.result.map(val => {
+            if (!val || typeof val !== 'object') {
+                val = {
+                    msg: val.msg,
+                    result: 'Rule array result item should be an object',
+                    status: 'failed'
+                };
+            }
+
+            if (!val.status || typeof val.status !== 'string') {
+                val = {
+                    msg: val.msg,
+                    result: 'Rule array result item should have a string status',
+                    status: 'failed'
+                };
+            }
+
+            if (!val.msg || typeof val.msg !== 'string') {
+                val = {
+                    msg: '',
+                    result: 'Rule array result item should have a string msg',
+                    status: 'failed'
+                };
+            }
+
+            // Lets check if we should ignore it...
+            const isIgnore = contains(ignore, val.msg) || contains(ignore, val.raw);
+            val.status = isIgnore ? 'ignored' : val.status;
+
+            if (val.status !== 'ignored') {
+                // We need to take care of status...
+                if (val.status === 'warning') {
+                    logWarn(rule.name, val.msg, val.raw);
+                } else if (val.status === 'failed') {
+                    nestedError = true;
+                } else {
+                    val.status = 'passed';
+                }
+            }
+
+            return val;
         });
 
-        // Ready
-        return newRule;
-    })
-    .catch(err => {
-        const newRule = {
-            name: rule.name,
-            status: 'failed',
-            result: err
-        };
+        // There was an error on the nested ones
+        if (nestedError) {
+            data.status = 'failed';
+            throw data;
+        }
 
-        // Ready
-        throw newRule;
+        // No worries, pass the data
+        return data;
     });
 };
 
@@ -118,32 +163,52 @@ const runAudit = (auditsData = [], url = {}, resolve, reject) => {
     auditsData.forEach(audit => {
         audits[audit.name] = [];
 
-        desTest(`Audit: ${audit.name}`, () => audit.rules.forEach(rule => itTest(`Rule: ${rule.name}`, function (done) {
-            this.timeout(20000);
+        desTest(`Audit: ${audit.name}`, () => audit.rules.forEach(rule => {
+            const isIgnore = contains(audit.ignore, rule.name);
 
-            // Lets run the rule
-            runRule(rule, url)
-            .then(newRule => {
-                // Ready
-                audits[audit.name].push(newRule);
-                done();
+            // We may need to ignore it
+            if (isIgnore) {
+                return itTest.skip(`Rule: ${rule.name}`, () => {
+                    // Cache it so we know it later
+                    audits[audit.name].push({
+                        name: rule.name,
+                        status: 'ignored',
+                        result: false
+                    });
 
-                allDone += 1;
-                if (allDone === promisesCount) { resolve(audits); }
+                    allDone += 1;
+                    if (allDone === promisesCount) { resolve(audits); }
+                });
+            }
 
-                return newRule;
-            })
-            .catch(newRule => {
-                const err = newRule.result;
+            // Lets actually run the rule
+            itTest(`Rule: ${rule.name}`, function (done) {
+                this.timeout(20000);
 
-                // Ready
-                audits[audit.name].push(newRule);
-                done(err instanceof Error ? err : new Error(JSON.stringify(err, null, 4)));
+                // Lets run the rule
+                runRule(rule, url, audit.ignore)
+                .then(newRule => {
+                    // Ready
+                    audits[audit.name].push(newRule);
+                    done();
 
-                allDone += 1;
-                if (allDone === promisesCount) { reject(audits); }
+                    allDone += 1;
+                    if (allDone === promisesCount) { resolve(audits); }
+
+                    return newRule;
+                })
+                .catch(newRule => {
+                    const err = newRule.result;
+
+                    // Ready
+                    audits[audit.name].push(newRule);
+                    done(err instanceof Error ? err : new Error(JSON.stringify(err, null, 4)));
+
+                    allDone += 1;
+                    if (allDone === promisesCount) { reject(audits); }
+                });
             });
-        })));
+        }));
     });
 
     return audits;
@@ -295,6 +360,14 @@ const setup = (newDes, newIt, newWarn, reset) => {
                     throw err;
                 }
             },
+            timeout: () => {}
+        };
+
+        cb.bind(module)(module.done);
+    };
+    itTest.skip = newIt && newIt.skip || itTest && itTest.skip || function (msg, cb) {
+        const module = {
+            done: () => {},
             timeout: () => {}
         };
 

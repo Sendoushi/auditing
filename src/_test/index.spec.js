@@ -280,7 +280,24 @@ describe('audit.index', () => {
             ];
 
             (new Promise((resolve, reject) => fns.runAudit(auditsData, {}, resolve, reject)))
-            .then(done.bind(null, null))
+            .then(data => {
+                expect(data).to.be.an('object');
+                expect(data).to.have.keys(['foo']);
+                expect(data.foo).to.be.an('array');
+                expect(data.foo.length).to.eql(1);
+
+                data.foo.forEach(val => {
+                    expect(val).to.have.keys(['name', 'status', 'result']);
+                    expect(val.name).to.be.a('string');
+                    expect(val.name).to.eql('bar');
+                    expect(val.status).to.be.a('string');
+                    expect(val.status).to.eql('passed');
+                    expect(val.result).to.be.a('boolean');
+                    expect(val.result).to.eql(true);
+                });
+
+                done();
+            })
             .catch(done);
         });
 
@@ -297,18 +314,35 @@ describe('audit.index', () => {
 
             (new Promise((resolve, reject) => fns.runAudit(auditsData, {}, resolve, reject)))
             .then(() => { done('It should\'ve errored'); })
-            .catch(() => { done(); });
+            .catch(err => {
+                expect(err).to.be.an('object');
+                expect(err).to.have.keys(['foo']);
+                expect(err.foo).to.be.an('array');
+                expect(err.foo.length).to.eql(1);
+
+                err.foo.forEach(val => {
+                    expect(val).to.have.keys(['name', 'status', 'result']);
+                    expect(val.name).to.be.a('string');
+                    expect(val.name).to.eql('bar');
+                    expect(val.status).to.be.a('string');
+                    expect(val.status).to.eql('failed');
+                    expect(val.result).to.be.a('boolean');
+                    expect(val.result).to.eql(true);
+                });
+
+                done();
+            });
         });
 
         it('should error with one success and one fail', (done) => {
             const auditsData = [
                 {
-                    name: 'foo',
+                    name: 'set',
                     rules: [{
                         name: 'bar',
                         fn: () => new Promise((resolve, reject) => { reject(true); })
                     }, {
-                        name: 'foobar',
+                        name: 'foo',
                         fn: () => new Promise((resolve) => { resolve(true); })
                     }]
                 }
@@ -316,7 +350,30 @@ describe('audit.index', () => {
 
             (new Promise((resolve, reject) => fns.runAudit(auditsData, {}, resolve, reject)))
             .then(() => { done('It should\'ve errored'); })
-            .catch(() => { done(); });
+            .catch(err => {
+                expect(err).to.be.an('object');
+                expect(err).to.have.keys(['set']);
+                expect(err.set).to.be.an('array');
+                expect(err.set.length).to.eql(2);
+
+                err.set.forEach(val => {
+                    expect(val).to.have.keys(['name', 'status', 'result']);
+                    expect(val.name).to.be.a('string');
+                    expect(val.status).to.be.a('string');
+                    expect(val.result).to.be.a('boolean');
+                    expect(val.result).to.eql(true);
+
+                    if (val.name === 'bar') {
+                        expect(val.status).to.eql('failed');
+                    }
+
+                    if (val.name === 'foo') {
+                        expect(val.status).to.eql('passed');
+                    }
+                });
+
+                done();
+            });
         });
 
         it('should error without a resolve function', (done) => {
@@ -355,6 +412,45 @@ describe('audit.index', () => {
             } catch (err) {
                 done();
             }
+        });
+
+        it('should ignore rule', (done) => {
+            const auditsData = [
+                {
+                    name: 'set',
+                    rules: [{
+                        name: 'bar',
+                        fn: () => new Promise((resolve, reject) => { reject(true); })
+                    }, {
+                        name: 'foo',
+                        fn: () => new Promise((resolve) => { resolve(true); })
+                    }],
+                    ignore: ['bar']
+                }
+            ];
+
+            (new Promise((resolve, reject) => fns.runAudit(auditsData, {}, resolve, reject)))
+            .then((data) => {
+                expect(data).to.be.an('object');
+                expect(data).to.have.keys(['set']);
+                expect(data.set).to.be.an('array');
+                expect(data.set.length).to.eql(2);
+
+                data.set.forEach(val => {
+                    expect(val).to.have.keys(['name', 'status', 'result']);
+                    expect(val.name).to.be.a('string');
+                    expect(val.status).to.be.a('string');
+                    expect(val.result).to.be.a('boolean');
+
+                    if (val.name === 'bar') {
+                        expect(val.status).to.eql('ignored');
+                        expect(val.result).to.eql(false);
+                    }
+                });
+
+                done();
+            })
+            .catch(done);
         });
     });
 
@@ -415,6 +511,44 @@ describe('audit.index', () => {
             .catch(done);
         });
 
+        it('should ignore rule', (done) => {
+            fns.runRule({
+                name: 'foo',
+                fn: () => (new Promise(resolve => resolve(true)))
+            }, {}, ['foo'])
+            .then(data => {
+                expect(data).to.be.an('object');
+                expect(data).to.have.keys(['name', 'status', 'result']);
+                expect(data.name).to.be.a('string');
+                expect(data.status).to.be.a('string');
+                expect(data.status).to.eql('ignored');
+                expect(data.result).to.be.a('boolean');
+                expect(data.result).to.eql(false);
+
+                done();
+            })
+            .catch(done);
+        });
+
+        it('should ignore rule even if errored', (done) => {
+            fns.runRule({
+                name: 'foo',
+                fn: () => (new Promise((resolve, reject) => reject(true)))
+            }, {}, ['foo'])
+            .then(data => {
+                expect(data).to.be.an('object');
+                expect(data).to.have.keys(['name', 'status', 'result']);
+                expect(data.name).to.be.a('string');
+                expect(data.status).to.be.a('string');
+                expect(data.status).to.eql('ignored');
+                expect(data.result).to.be.a('boolean');
+                expect(data.result).to.eql(false);
+
+                done();
+            })
+            .catch(done);
+        });
+
         it('should error', (done) => {
             fns.runRule({
                 name: 'foo',
@@ -438,7 +572,7 @@ describe('audit.index', () => {
             fns.runRule({
                 name: 'foo',
                 fn: () => (new Promise(resolve => {
-                    resolve([{ type: 'passed', msg: 'Foo' }]);
+                    resolve([{ status: 'passed', msg: 'Foo' }]);
                 }))
             }, {})
             .then(data => {
@@ -452,9 +586,9 @@ describe('audit.index', () => {
 
                 data.result.forEach(result => {
                     expect(result).to.be.an('object');
-                    expect(result).to.have.keys(['type', 'msg']);
-                    expect(result.type).to.be.a('string');
-                    expect(result.type).to.eql('passed');
+                    expect(result).to.have.keys(['status', 'msg']);
+                    expect(result.status).to.be.a('string');
+                    expect(result.status).to.eql('passed');
                     expect(result.msg).to.be.a('string');
                     expect(result.msg).to.eql('Foo');
                 });
@@ -464,11 +598,101 @@ describe('audit.index', () => {
             .catch(done);
         });
 
-        it('should error with array result item without type', (done) => {
+        it('should ignore message within array result', (done) => {
+            fns.runRule({
+                name: 'set',
+                fn: () => (new Promise(resolve => {
+                    resolve([{ status: 'passed', msg: 'Foo' }]);
+                }))
+            }, {}, ['foo'])
+            .then(data => {
+                expect(data).to.be.an('object');
+                expect(data).to.have.keys(['name', 'status', 'result']);
+                expect(data.name).to.be.a('string');
+                expect(data.status).to.be.a('string');
+                expect(data.status).to.eql('passed');
+                expect(data.result).to.be.an('array');
+                expect(data.result.length).to.eql(1);
+
+                data.result.forEach(result => {
+                    expect(result).to.be.an('object');
+                    expect(result).to.have.keys(['status', 'msg']);
+                    expect(result.status).to.be.a('string');
+                    expect(result.status).to.eql('ignored');
+                    expect(result.msg).to.be.a('string');
+                    expect(result.msg).to.eql('Foo');
+                });
+
+                done();
+            })
+            .catch(done);
+        });
+
+        it('should error with array result error', (done) => {
             fns.runRule({
                 name: 'foo',
                 fn: () => (new Promise(resolve => {
-                    resolve([{ typo: 'passed', msg: 'Foo' }]);
+                    resolve([{ status: 'failed', msg: 'Foo' }]);
+                }))
+            }, {})
+            .then(() => { done('It shouldn\'t have passed'); })
+            .catch(err => {
+                expect(err).to.be.an('object');
+                expect(err).to.have.keys(['name', 'status', 'result']);
+                expect(err.name).to.be.a('string');
+                expect(err.status).to.be.a('string');
+                expect(err.status).to.eql('failed');
+                expect(err.result).to.be.an('array');
+                expect(err.result.length).to.eql(1);
+
+                err.result.forEach(result => {
+                    expect(result).to.be.an('object');
+                    expect(result).to.have.keys(['status', 'msg']);
+                    expect(result.status).to.be.a('string');
+                    expect(result.status).to.eql('failed');
+                    expect(result.msg).to.be.a('string');
+                    expect(result.msg).to.eql('Foo');
+                });
+
+                done();
+            });
+        });
+
+        it('should ignore message within an array errored result', (done) => {
+            fns.runRule({
+                name: 'set',
+                fn: () => (new Promise(resolve => {
+                    resolve([{ status: 'failed', msg: 'Foo' }]);
+                }))
+            }, {}, ['foo'])
+            .then(data => {
+                expect(data).to.be.an('object');
+                expect(data).to.have.keys(['name', 'status', 'result']);
+                expect(data.name).to.be.a('string');
+                expect(data.status).to.be.a('string');
+                expect(data.status).to.eql('passed');
+                expect(data.result).to.be.an('array');
+                expect(data.result.length).to.eql(1);
+
+                data.result.forEach(result => {
+                    expect(result).to.be.an('object');
+                    expect(result).to.have.keys(['status', 'msg']);
+                    expect(result.status).to.be.a('string');
+                    expect(result.status).to.eql('ignored');
+                    expect(result.msg).to.be.a('string');
+                    expect(result.msg).to.eql('Foo');
+                });
+
+                done();
+            })
+            .catch(done);
+        });
+
+        it('should error with array result item without status', (done) => {
+            fns.runRule({
+                name: 'foo',
+                fn: () => (new Promise(resolve => {
+                    resolve([{ statuo: 'passed', msg: 'Foo' }]);
                 }))
             }, {})
             .then(() => done('It should\'ve errored'))
@@ -478,7 +702,18 @@ describe('audit.index', () => {
                 expect(err.name).to.be.a('string');
                 expect(err.status).to.be.a('string');
                 expect(err.status).to.eql('failed');
-                expect(err.result).to.be.an('error');
+                expect(err.result).to.be.an('array');
+                expect(err.result.length).to.eql(1);
+
+                err.result.forEach(result => {
+                    expect(result).to.be.an('object');
+                    expect(result).to.contain.keys(['status', 'msg', 'result']);
+                    expect(result.status).to.be.a('string');
+                    expect(result.status).to.eql('failed');
+                    expect(result.msg).to.be.a('string');
+                    expect(result.msg).to.eql('Foo');
+                    expect(result.result).to.be.a('string');
+                });
 
                 done();
             });
@@ -488,7 +723,7 @@ describe('audit.index', () => {
             fns.runRule({
                 name: 'foo',
                 fn: () => (new Promise(resolve => {
-                    resolve([{ type: 'passed', msga: 'Foo' }]);
+                    resolve([{ status: 'passed', msga: 'Foo' }]);
                 }))
             }, {})
             .then(() => done('It should\'ve errored'))
@@ -498,13 +733,24 @@ describe('audit.index', () => {
                 expect(err.name).to.be.a('string');
                 expect(err.status).to.be.a('string');
                 expect(err.status).to.eql('failed');
-                expect(err.result).to.be.an('error');
+                expect(err.result).to.be.an('array');
+                expect(err.result.length).to.eql(1);
+
+                err.result.forEach(result => {
+                    expect(result).to.be.an('object');
+                    expect(result).to.contain.keys(['status', 'msg', 'result']);
+                    expect(result.status).to.be.a('string');
+                    expect(result.status).to.eql('failed');
+                    expect(result.msg).to.be.a('string');
+                    expect(result.msg).to.be.eql('');
+                    expect(result.result).to.be.a('string');
+                });
 
                 done();
             });
         });
 
-        it('should warn in case of type warning', (done) => {
+        it('should warn in case of status warning', (done) => {
             fns.setup(null, null, (name, msg, raw) => {
                 expect(name).to.be.a('string');
                 expect(name).to.eql('foo');
@@ -517,7 +763,7 @@ describe('audit.index', () => {
             fns.runRule({
                 name: 'foo',
                 fn: () => (new Promise(resolve => {
-                    resolve([{ type: 'warning', msg: 'Foo', raw: { bar: 'foo' } }]);
+                    resolve([{ status: 'warning', msg: 'Foo', raw: { bar: 'foo' } }]);
                 }))
             }, {})
             .then(data => {
@@ -531,9 +777,9 @@ describe('audit.index', () => {
 
                 data.result.forEach(result => {
                     expect(result).to.be.an('object');
-                    expect(result).to.have.keys(['type', 'msg', 'raw']);
-                    expect(result.type).to.be.a('string');
-                    expect(result.type).to.eql('warning');
+                    expect(result).to.have.keys(['status', 'msg', 'raw']);
+                    expect(result.status).to.be.a('string');
+                    expect(result.status).to.eql('warning');
                     expect(result.msg).to.be.a('string');
                     expect(result.msg).to.eql('Foo');
                 });

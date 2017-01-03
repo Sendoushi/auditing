@@ -56,12 +56,39 @@ const readFile = (pathSrc, dirname) => {
     return fs.readFileSync(filename, 'utf8');
 };
 
+/**
+ * Is pattern in array
+ *
+ * @param {array} arr
+ * @param {string} val
+ * @returns
+ */
+const contains = (arr = [], val) => {
+    let is = false;
+
+    if (typeof arr === 'string') {
+        arr = [arr];
+    }
+
+    if (typeof val !== 'string') {
+        return is;
+    }
+
+    arr.forEach(pattern => {
+        const reg = new RegExp(pattern.toLowerCase(), 'g');
+        is = reg.test(val.toLowerCase());
+    });
+
+    return is;
+};
+
 // --------------------------------
 // Export
 
 export { isUrl };
 export { getPwd };
 export { readFile };
+export { contains };
 
 // Essentially for testing purposes
-export const __testMethods__ = { isUrl, getPwd, readFile };
+export const __testMethods__ = { isUrl, getPwd, readFile, contains };
