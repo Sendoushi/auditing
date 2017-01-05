@@ -7,10 +7,40 @@ import path from 'path';
 // Functions
 
 /**
+ * Checks if there were logs in the console
+ *
+ * @param {object} req
+ * @returns promise
+ */
+const hasntLogs = (req) => new Promise((resolve, reject) => {
+    req.domReq.logs.length ? reject(req.domReq.logs) : resolve(true);
+});
+
+/**
+ * Checks if there were warnings in the console
+ *
+ * @param {object} req
+ * @returns promise
+ */
+const hasntWarns = (req) => new Promise((resolve, reject) => {
+    req.domReq.warns.length ? reject(req.domReq.warns) : resolve(true);
+});
+
+/**
+ * Checks if there were errors
+ *
+ * @param {object} req
+ * @returns promise
+ */
+const hasntErrors = (req) => new Promise((resolve, reject) => {
+    req.domReq.errors.length ? reject(req.domReq.errors) : resolve(true);
+});
+
+/**
  * Checks if js is versioned
  *
  * @param {object} req
- * @returns
+ * @returns promise
  */
 const hasJsVersion = (req) => new Promise((resolve, reject) => {
     const links = req.domReq.window.$('script');
@@ -48,7 +78,7 @@ const hasJsVersion = (req) => new Promise((resolve, reject) => {
  * Checks if css is versioned
  *
  * @param {object} req
- * @returns
+ * @returns promise
  */
 const hasCssVersion = (req) => new Promise((resolve, reject) => {
     const links = req.domReq.window.$('link[rel="stylesheet"]');
@@ -88,6 +118,9 @@ const hasCssVersion = (req) => new Promise((resolve, reject) => {
 export default {
     name: 'bestPractices',
     rules: [
+        { name: 'hasntLogs', fn: hasntLogs },
+        { name: 'hasntWarns', fn: hasntWarns },
+        { name: 'hasntErrors', fn: hasntErrors },
         { name: 'hasCssVersion', fn: hasCssVersion },
         { name: 'hasJsVersion', fn: hasJsVersion }
     ]

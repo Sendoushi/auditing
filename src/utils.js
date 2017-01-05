@@ -76,7 +76,7 @@ const contains = (arr = [], val) => {
 
     arr.forEach(pattern => {
         const reg = new RegExp(pattern.toLowerCase(), 'g');
-        is = reg.test(val.toLowerCase());
+        is = is || reg.test(val.toLowerCase());
     });
 
     return is;

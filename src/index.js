@@ -12,7 +12,8 @@ import { getPwd, contains } from './utils.js';
 
 // Import modules
 const modules = {
-    bestPractices: require('./modules/bestPractices.js')
+    bestPractices: require('./modules/bestPractices.js'),
+    analytics: require('./modules/analytics.js')
     // w3: require('./modules/w3.js')
     // TODO: Take care of these modules to be compliant...
     // wcag: require('./modules/wcag.js'),

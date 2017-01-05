@@ -10,21 +10,6 @@ import { __testMethods__ as fns } from '../index.js';
 // --------------------------------
 // Functions
 
-/**
- * It test to act as stub
- *
- * @param {string} msg
- * @param {function} cb
- */
-const itTest = function (msg, cb) {
-    const module = {
-        done: () => {},
-        timeout: () => {}
-    };
-
-    cb.bind(module)(module.done);
-};
-
 // --------------------------------
 // Suite of tests
 
@@ -260,10 +245,6 @@ describe('audit.index', () => {
 
     // runAudit
     describe('runAudit', () => {
-        before(() => {
-            fns.setup(null, itTest);
-        });
-
         it('should resolve with success', (done) => {
             const auditsData = [
                 {

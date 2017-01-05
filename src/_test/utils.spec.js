@@ -124,6 +124,12 @@ describe('audit.utils', () => {
             expect(result).to.be.eql(true);
         });
 
+        it('should return true event with multiple items in array', () => {
+            const result = fns.contains(['foo', 'bar'], 'foo');
+            expect(result).to.be.a('boolean');
+            expect(result).to.be.eql(true);
+        });
+
         it('should return false if it doesn\'t match', () => {
             const result = fns.contains('foo', 'bar');
             expect(result).to.be.a('boolean');
