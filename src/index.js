@@ -12,7 +12,8 @@ import { getPwd, contains } from './utils.js';
 
 // Import modules
 const modules = {
-    w3: require('./modules/w3.js')
+    bestPractices: require('./modules/bestPractices.js')
+    // w3: require('./modules/w3.js')
     // TODO: Take care of these modules to be compliant...
     // wcag: require('./modules/wcag.js'),
     // SEO: require('./modules/seo.js'),
@@ -355,11 +356,7 @@ const setup = (newDes, newIt, newWarn, reset) => {
 
     itTest = newIt || itTest || function (msg, cb) {
         const module = {
-            done: (err) => {
-                if (err) {
-                    throw err;
-                }
-            },
+            done: () => {},
             timeout: () => {}
         };
 

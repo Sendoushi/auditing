@@ -18,12 +18,7 @@ import { __testMethods__ as fns } from '../index.js';
  */
 const itTest = function (msg, cb) {
     const module = {
-        done: (err) => {
-            if (err) {
-                // We want to ignore the error
-                // throw err;
-            }
-        },
+        done: () => {},
         timeout: () => {}
     };
 
@@ -143,7 +138,7 @@ describe('audit.index', () => {
             const config = [{
                 src: ['http://google.pt'],
                 type: 'url',
-                audits: ['w3']
+                audits: ['./src/_test/data/custom.js']
             }];
 
             // We need some time for this one to be well tested...
@@ -180,10 +175,10 @@ describe('audit.index', () => {
                     expect(val.srcData.length).to.eql(1);
                     val.srcData.forEach(url => {
                         expect(url).to.be.an('object');
-                        expect(url).to.have.keys('requestSrc', 'originalSrc', 'window');
+                        expect(url).to.have.keys('requestSrc', 'originalSrc', 'domReq');
                         expect(url.requestSrc).to.be.a('string');
                         expect(url.originalSrc).to.be.a('string');
-                        expect(url.window).to.be.an('object');
+                        expect(url.domReq).to.be.an('object');
                     });
                 });
 
@@ -195,7 +190,7 @@ describe('audit.index', () => {
     // buildAudits
     describe('buildAudits', () => {
         it('should build audits with an array', () => {
-            const result = fns.buildAudits(['w3']);
+            const result = fns.buildAudits(['./src/_test/data/custom.js']);
 
             expect(result).to.be.an('array');
             expect(result.length).to.eql(1);
@@ -211,7 +206,7 @@ describe('audit.index', () => {
         });
 
         it('should build audits with a string', () => {
-            const result = fns.buildAudits('w3');
+            const result = fns.buildAudits('./src/_test/data/custom.js');
 
             expect(result).to.be.an('array');
             expect(result.length).to.eql(1);

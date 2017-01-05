@@ -13,7 +13,7 @@ import w3cjs from 'w3cjs';
  * @returns
  */
 const isCompliant = (req) => {
-    const documentHtml = req.window.document.documentElement.outerHTML;
+    const documentHtml = req.domReq.window.document.documentElement.outerHTML;
 
     // Now lets validate
     const promise = new Promise((resolve, reject) => {

@@ -72,11 +72,10 @@ This repo relies on usage of `*.json` config files. Below I try to explain how t
         "src": ["<url_path>", "<content>", "<file>"],
         "type": "url|content|file",
         "audits": ["<path_to_custom>", {
-            "name": "Custom",
             "src": "<path_to_custom>",
             "ignore": ["<pattern_to_ignore>"]
         }, {
-            "name": "<path_to_custom>"
+            "src": "<path_to_custom>"
         }],
         "base": "<optionl_url_base_path>",
         "baseEnv": "<optionl_env_var_to_set_base_upon>"

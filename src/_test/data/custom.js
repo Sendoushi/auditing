@@ -12,7 +12,7 @@
  */
 const hasBody = (req) => {
     const promise = new Promise((resolve) => {
-        const bodyHtml = req.window.$('body').html();
+        const bodyHtml = req.domReq.window.$('body').html();
 
         if (!bodyHtml.length) {
             throw new Error('No body found');

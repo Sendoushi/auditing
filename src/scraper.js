@@ -2,11 +2,53 @@
 /* global Promise */
 
 import jsdom from 'jsdom';
+import resourceLoader from 'jsdom/lib/jsdom/browser/resource-loader';
+import toughCookie from 'tough-cookie';
 import { isUrl } from './utils.js';
 import { getPwd } from './utils.js';
 
 //-------------------------------------
 // Functions
+
+/**
+ * Gets url markup
+ *
+ * @param {string} url
+ * @returns {promise}
+ */
+const getUrlMarkup = (url) => new Promise((resolve, reject) => {
+    if (typeof url !== 'string') {
+        throw new Error('Url needs to be a string');
+    }
+
+    const options = {
+        defaultEncoding: 'windows-1252',
+        detectMetaCharset: true,
+        // headers: config.headers,
+        pool: {
+            maxSockets: 6
+        },
+        strictSSL: true,
+        // proxy: config.proxy,
+        cookieJar: new toughCookie.CookieJar(null, { looseMode: true }),
+        userAgent: `Node.js (${process.platform}; U; rv:${process.version}) AppleWebKit/537.36 (KHTML, like Gecko)`,
+        // agent: config.agent,
+        // agentClass: config.agentClass,
+        agentOptions: {
+            keepAlive: true,
+            keepAliveMsecs: 115 * 1000
+        }
+    };
+
+    // Finally download it!
+    resourceLoader.download(url, options, (err, responseText) => {
+        if (err) {
+            return reject(err);
+        }
+
+        resolve(responseText);
+    });
+});
 
 /**
  * Get request urls
@@ -49,22 +91,66 @@ const getReqUrls = (urls, base, baseEnv) => {
  * @param {string} type
  * @returns {promise}
  */
-const getDom = (src, type) => new Promise((resolve, reject) => {
-    // Need to check if url is ok
-    if (type === 'url' && !isUrl(src)) {
-        return reject(new Error('Url not valid'));
-    }
-
-    // Set jsdom...
-    jsdom.env(src, ['http://code.jquery.com/jquery.js'], (err, window) => {
-        if (err) {
-            return reject(err);
+const getDom = (src, type) => {
+    const promise = new Promise((resolve, reject) => {
+        // Need to check if url is ok
+        if (type === 'url' && !isUrl(src)) {
+            return reject(new Error('Url not valid'));
         }
 
-        // Cache the window
-        resolve(window);
-    });
-});
+        resolve();
+    })
+    .then(() => {
+        // It is already markup
+        if (type === 'content' || type === 'file') {
+            return src;
+        }
+
+        // Lets get the markup
+        return getUrlMarkup(src);
+    })
+    .then(markup => new Promise((resolve, reject) => {
+        // Lets force markup to have jquery
+        // This is accepted by jsdom.jsdom and jsdom.env
+        const jqueryScript = '<script type="text/javascript" src="http://code.jquery.com/jquery.js"></script>';
+        if (markup.indexOf('<head>') !== -1) {
+            markup = markup.replace('<head>', `<head>${jqueryScript}`);
+        } else if (markup.indexOf('<body>') !== -1) {
+            markup = markup.replace('<body>', `<body>${jqueryScript}`);
+        }
+
+        // Prepare for possible errors
+        const virtualConsole = jsdom.createVirtualConsole();
+        const errors = [];
+        const logs = [];
+        const warns = [];
+
+        virtualConsole.on('jsdomError', error => { errors.push(error); });
+        virtualConsole.on('error', error => { errors.push(error); });
+        virtualConsole.on('log', log => { logs.push(log); });
+        virtualConsole.on('warn', warn => { warns.push(warn); });
+
+        // Config
+        const config = {
+            html: markup,
+            virtualConsole,
+            features: {
+                FetchExternalResources: ['script', 'link'],
+                ProcessExternalResources: ['script'],
+                SkipExternalResources: false
+            },
+            done: (err, window) => {
+                if (err) { return reject(err); }
+                resolve({ window, errors, logs, warns, preMarkup: markup });
+            }
+        };
+
+        // Now for the actual getting
+        jsdom.env(config);
+    }));
+
+    return promise;
+};
 
 /**
  * Scrapes
@@ -87,8 +173,8 @@ const run = (data) => {
 
     // Finally lets set the promises
     const urlsPromises = reqSrc.map((req) => getDom(req.requestSrc, data.type)
-    .then((window) => {
-        req.window = window;
+    .then((domReq) => {
+        req.domReq = domReq;
         return req;
     })
     .catch((err) => {
@@ -104,6 +190,7 @@ const run = (data) => {
 
 export { run };
 export { getDom };
+export { getUrlMarkup };
 
 // Essentially for testing purposes
-export const __testMethods__ = { run, getDom, getReqUrls };
+export const __testMethods__ = { run, getDom, getReqUrls, getUrlMarkup };

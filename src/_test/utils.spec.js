@@ -60,7 +60,7 @@ describe('audit.utils', () => {
         });
 
         it('should return if url', () => {
-            const urls = ['http://www.google.com', 'http://google.com'];
+            const urls = ['http://www.brainjar.com/java/host/test.html', 'http://brainjar.com/java/host/test.html'];
             let result;
 
             urls.forEach((url) => {
@@ -76,10 +76,10 @@ describe('audit.utils', () => {
     describe('isUrl', () => {
         it('should be true', () => {
             const urls = [
-                'http://www.google.com',
-                'http://google.com',
-                'https://www.google.com',
-                'https://google.com'
+                'http://www.brainjar.com/java/host/test.html',
+                'http://brainjar.com/java/host/test.html',
+                'https://www.brainjar.com/java/host/test.html',
+                'https://brainjar.com/java/host/test.html'
             ];
             let result;
 
@@ -93,10 +93,10 @@ describe('audit.utils', () => {
 
         it('shouldn\'t be true', () => {
             const urls = [
-                'www.google.com',
-                'google.com',
-                '/www.google.com',
-                '/google.com',
+                'www.brainjar.com/java/host/test.html',
+                'brainjar.com/java/host/test.html',
+                '/www.brainjar.com/java/host/test.html',
+                '/brainjar.com/java/host/test.html',
                 '/bar'
             ];
             let result;
