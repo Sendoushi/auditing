@@ -10,7 +10,7 @@ import { __testMethods__ as fns } from '../scraper.js';
 // --------------------------------
 // Suite of tests
 
-describe('audit.scraper', () => {
+describe.only('audit.scraper', () => {
     // getReqUrls
     describe('getReqUrls', () => {
         it('should get an array', () => {
@@ -63,10 +63,10 @@ describe('audit.scraper', () => {
         });
     });
 
-    // getUrlMarkup
-    describe('getUrlMarkup', () => {
+    // getUrl
+    describe('getUrl', () => {
         it('should get an url markup', (done) => {
-            fns.getUrlMarkup('http://www.brainjar.com/java/host/test.html')
+            fns.getUrl('http://www.brainjar.com/java/host/test.html')
             .then(markup => {
                 expect(markup).to.be.a('string');
                 expect(markup).to.have.length.above(100);
@@ -79,13 +79,13 @@ describe('audit.scraper', () => {
         });
 
         it('should error without an url', (done) => {
-            fns.getUrlMarkup()
+            fns.getUrl()
             .then(() => { done('It shouldn\'t have errored'); })
             .catch(done.bind(null, null));
         });
 
         it('should error without a string url', (done) => {
-            fns.getUrlMarkup({})
+            fns.getUrl({})
             .then(() => { done('It shouldn\'t have errored'); })
             .catch(done.bind(null, null));
         });
@@ -99,13 +99,11 @@ describe('audit.scraper', () => {
             fns.getDom('http://www.brainjar.com/java/host/test.html', 'url')
             .then(domObj => {
                 expect(domObj).to.be.an('object');
-                expect(domObj).to.have.keys(['window', 'errors', 'logs', 'warns', 'preMarkup']);
+                expect(domObj).to.have.keys(['window', 'errors', 'logs', 'warns']);
                 expect(domObj.window).to.contain.keys(['$', 'document']);
                 expect(domObj.errors).to.be.an('array');
                 expect(domObj.logs).to.be.an('array');
                 expect(domObj.warns).to.be.an('array');
-                expect(domObj.preMarkup).to.be.a('string');
-                expect(domObj.preMarkup).to.have.length.above(1);
                 done();
             })
             .catch(done);
@@ -117,13 +115,11 @@ describe('audit.scraper', () => {
             fns.getDom('<html><body><h1>Headline</h1></body></html>', 'content')
             .then(domObj => {
                 expect(domObj).to.be.an('object');
-                expect(domObj).to.have.keys(['window', 'errors', 'logs', 'warns', 'preMarkup']);
+                expect(domObj).to.have.keys(['window', 'errors', 'logs', 'warns']);
                 expect(domObj.window).to.contain.keys(['$', 'document']);
                 expect(domObj.errors).to.be.an('array');
                 expect(domObj.logs).to.be.an('array');
                 expect(domObj.warns).to.be.an('array');
-                expect(domObj.preMarkup).to.be.a('string');
-                expect(domObj.preMarkup).to.have.length.above(1);
                 done();
             })
             .catch(done);
@@ -139,14 +135,12 @@ describe('audit.scraper', () => {
             fns.getDom(tmpl, 'content')
             .then(domObj => {
                 expect(domObj).to.be.an('object');
-                expect(domObj).to.have.keys(['window', 'errors', 'logs', 'warns', 'preMarkup']);
+                expect(domObj).to.have.keys(['window', 'errors', 'logs', 'warns']);
                 expect(domObj.window.document.getElementById('headline').textContent).to.eql('Foo');
                 expect(domObj.window).to.contain.keys(['$', 'document']);
                 expect(domObj.errors).to.be.an('array');
                 expect(domObj.logs).to.be.an('array');
                 expect(domObj.warns).to.be.an('array');
-                expect(domObj.preMarkup).to.be.a('string');
-                expect(domObj.preMarkup).to.have.length.above(1);
                 done();
             })
             .catch(done);
@@ -162,13 +156,11 @@ describe('audit.scraper', () => {
             fns.getDom(tmpl, 'content')
             .then(domObj => {
                 expect(domObj).to.be.an('object');
-                expect(domObj).to.have.keys(['window', 'errors', 'logs', 'warns', 'preMarkup']);
+                expect(domObj).to.have.keys(['window', 'errors', 'logs', 'warns']);
                 expect(domObj.window).to.contain.keys(['$', 'document']);
                 expect(domObj.errors).to.be.an('array');
                 expect(domObj.logs).to.be.an('array');
                 expect(domObj.warns).to.be.an('array');
-                expect(domObj.preMarkup).to.be.a('string');
-                expect(domObj.preMarkup).to.have.length.above(1);
 
                 expect(domObj.errors.length).to.eql(2);
                 expect(domObj.errors[0]).to.contain('BarFoo');
@@ -189,13 +181,11 @@ describe('audit.scraper', () => {
             fns.getDom(tmpl, 'content')
             .then(domObj => {
                 expect(domObj).to.be.an('object');
-                expect(domObj).to.have.keys(['window', 'errors', 'logs', 'warns', 'preMarkup']);
+                expect(domObj).to.have.keys(['window', 'errors', 'logs', 'warns']);
                 expect(domObj.window).to.contain.keys(['$', 'document']);
                 expect(domObj.errors).to.be.an('array');
                 expect(domObj.logs).to.be.an('array');
                 expect(domObj.warns).to.be.an('array');
-                expect(domObj.preMarkup).to.be.a('string');
-                expect(domObj.preMarkup).to.have.length.above(1);
 
                 expect(domObj.logs.length).to.eql(1);
                 expect(domObj.logs).to.contain('FooBar');
@@ -215,13 +205,11 @@ describe('audit.scraper', () => {
             fns.getDom(tmpl, 'content')
             .then(domObj => {
                 expect(domObj).to.be.an('object');
-                expect(domObj).to.have.keys(['window', 'errors', 'logs', 'warns', 'preMarkup']);
+                expect(domObj).to.have.keys(['window', 'errors', 'logs', 'warns']);
                 expect(domObj.window).to.contain.keys(['$', 'document']);
                 expect(domObj.errors).to.be.an('array');
                 expect(domObj.logs).to.be.an('array');
                 expect(domObj.warns).to.be.an('array');
-                expect(domObj.preMarkup).to.be.a('string');
-                expect(domObj.preMarkup).to.have.length.above(1);
 
                 expect(domObj.warns.length).to.eql(1);
                 expect(domObj.warns).to.contain('FooBar');

@@ -16,7 +16,7 @@ import { getPwd } from './utils.js';
  * @param {string} url
  * @returns {promise}
  */
-const getUrlMarkup = (url) => new Promise((resolve, reject) => {
+const getUrl = (url) => new Promise((resolve, reject) => {
     if (typeof url !== 'string') {
         throw new Error('Url needs to be a string');
     }
@@ -100,27 +100,9 @@ const getDom = (src, type) => {
             return reject(new Error('Url not valid'));
         }
 
-        resolve();
+        resolve(src);
     })
-    .then(() => {
-        // It is already markup
-        if (type.of === 'content' || type.of === 'file') {
-            return src;
-        }
-
-        // Lets get the markup
-        return getUrlMarkup(src);
-    })
-    .then(markup => new Promise((resolve, reject) => {
-        // Lets force markup to have jquery
-        // This is accepted by jsdom.jsdom and jsdom.env
-        const jqueryScript = '<script type="text/javascript" src="http://code.jquery.com/jquery.js"></script>';
-        if (markup.indexOf('<head>') !== -1) {
-            markup = markup.replace('<head>', `<head>${jqueryScript}`);
-        } else if (markup.indexOf('<body>') !== -1) {
-            markup = markup.replace('<body>', `<body>${jqueryScript}`);
-        }
-
+    .then(retrieveSrc => new Promise((resolve, reject) => {
         // Prepare for possible errors
         const virtualConsole = jsdom.createVirtualConsole();
         const errors = [];
@@ -134,8 +116,8 @@ const getDom = (src, type) => {
 
         // Config
         const config = {
-            html: markup,
             virtualConsole,
+            scripts: ['http://code.jquery.com/jquery.js'],
             features: {
                 FetchExternalResources: ['script', 'link'],
                 ProcessExternalResources: ['script'],
@@ -143,12 +125,12 @@ const getDom = (src, type) => {
             },
             done: (err, window) => {
                 if (err) { return reject(err); }
-                resolve({ window, errors, logs, warns, preMarkup: markup });
+                resolve({ window, errors, logs, warns });
             }
         };
 
         // Now for the actual getting
-        jsdom.env(config);
+        jsdom.env(retrieveSrc, config);
     }));
 
     return promise;
@@ -193,7 +175,7 @@ const run = (data) => {
 
 export { run };
 export { getDom };
-export { getUrlMarkup };
+export { getUrl };
 
 // Essentially for testing purposes
-export const __testMethods__ = { run, getDom, getReqUrls, getUrlMarkup };
+export const __testMethods__ = { run, getDom, getReqUrls, getUrl };
