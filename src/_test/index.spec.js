@@ -136,7 +136,7 @@ describe('audit.index', () => {
 
         it('should gather data', function (done) {
             const config = [{
-                src: ['http://google.pt'],
+                src: ['http://www.brainjar.com/java/host/test.html'],
                 type: 'url',
                 audits: ['./src/_test/data/custom.js']
             }];

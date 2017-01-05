@@ -268,7 +268,7 @@ describe('audit.scraper', () => {
 
             this.timeout(5000);
 
-            fns.run({ src: urls, type: 'url', base: 'http://' })
+            fns.run({ src: urls, type: { of: 'url', base: 'http://' } })
             .then((result) => {
                 expect(result).to.be.an('array');
                 expect(result).to.have.length(urls.length);

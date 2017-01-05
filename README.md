@@ -69,16 +69,23 @@ This repo relies on usage of `*.json` config files. Below I try to explain how t
     "projectId": "<project_id>",
     "projectName": "<project_name>",
     "data": [{
-        "src": ["<url_path>", "<content>", "<file>"],
+        "src": ["<url_path>", "<content|markup>", "<file>"],
+        // Type should reflect the src type
         "type": "url|content|file",
+        // Type can also be an object
+        "type": {
+            "of": "url",
+            // Base and baseenv are options only for type url
+            "base": "<optional_url_base_path>",
+            "baseEnv": "<optional_env_var_to_set_base_upon>"
+        },
         "audits": ["<path_to_custom>", {
             "src": "<path_to_custom>",
+            // Ignore rules and nested messages with ignore
             "ignore": ["<pattern_to_ignore>"]
         }, {
             "src": "<path_to_custom>"
-        }],
-        "base": "<optionl_url_base_path>",
-        "baseEnv": "<optionl_env_var_to_set_base_upon>"
+        }]
     }]
 }
 ```

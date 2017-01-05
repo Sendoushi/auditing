@@ -2,26 +2,30 @@
     "projectId": "test",
     "projectName": "Test",
     "data": [{
-        "src": ["http://google.pt"],
+        "src": ["http://www.brainjar.com/java/host/test.html"],
         "type": "url",
-        "audits": ["w3"]
+        "audits": ["bestPractices"]
     }, {
         "src": [
             "/search?q=foo&oq=foo&aqs=chrome..69i57j69i60j69i61j69i60.567j0j7&sourceid=chrome&ie=UTF-8",
             "/search?q=bar&oq=bar&aqs=chrome..69i57j69i60j69i61j69i60.567j0j7&sourceid=chrome&ie=UTF-8"
         ],
-        "type": "url",
-        "audits": ["w3", "SEO", "./src/_test/data/custom.js"],
-        "base": "http://google.pt"
+        "type": {
+            "of": "url",
+            "base": "http://www.google.pt"
+        },
+        "audits": ["bestPractices", "./src/_test/data/custom.js"]
     }, {
         "src": ["/search?q=foobar&oq=foobar&aqs=chrome.0.69i59j69i60.253j0j9&sourceid=chrome&ie=UTF-8"],
-        "type": "url",
-        "audits": ["w3", "SEO"],
-        "baseEnv": "AUDIT_BASE"
+        "type": {
+            "of": "url",
+            "baseEnv": "AUDIT_BASE"
+        },
+        "audits": ["bestPractices"]
     }, {
-        "src": ["http://google.pt"],
+        "src": ["http://www.google.pt"],
         "type": "url",
-        "audits": ["w3", {
+        "audits": ["bestPractices", {
             "src": "./src/_test/data/custom.js",
             "ignore": ["hasBody"]
         }]

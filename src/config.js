@@ -8,16 +8,21 @@ const STRUCT = Joi.object().keys({
     projectName: Joi.string().default('Project Name'),
     data: Joi.array().items(Joi.object().keys({
         src: Joi.array().items(Joi.string()).required(),
-        type: Joi.string().valid(['url', 'content', 'file']).required(),
+        type: Joi.alternatives().try(
+            Joi.string().valid(['url', 'content', 'file']).required(),
+            Joi.object().keys({
+                of: Joi.string().valid(['url', 'content', 'file']).required(),
+                base: Joi.string(),
+                baseEnv: Joi.string()
+            })
+        ),
         audits: Joi.array().items(Joi.alternatives().try(
             Joi.string(),
             Joi.object().keys({
                 src: Joi.string().required(),
                 ignore: Joi.array().items(Joi.string())
             })
-        )),
-        base: Joi.string(),
-        baseEnv: Joi.string()
+        ))
     })).default([])
 }).required();
 
@@ -54,7 +59,11 @@ const get = (config) => {
 
     // Verify config
     if (!config || config.error) {
-        throw new Error(config.error);
+        if (config && config.error && typeof config.error === 'object' && config.error.err) {
+            throw new Error(config.error.err);
+        }
+
+        throw new Error(config && config.error || 'Couldn\'t validate');
     }
 
     return config.value;

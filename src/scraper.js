@@ -88,13 +88,15 @@ const getReqUrls = (urls, base, baseEnv) => {
  * Gets DOM from url
  *
  * @param {string} src
- * @param {string} type
+ * @param {string|object} type
  * @returns {promise}
  */
 const getDom = (src, type) => {
+    type = typeof type === 'string' ? { of: type } : type;
+
     const promise = new Promise((resolve, reject) => {
         // Need to check if url is ok
-        if (type === 'url' && !isUrl(src)) {
+        if (type.of === 'url' && !isUrl(src)) {
             return reject(new Error('Url not valid'));
         }
 
@@ -102,7 +104,7 @@ const getDom = (src, type) => {
     })
     .then(() => {
         // It is already markup
-        if (type === 'content' || type === 'file') {
+        if (type.of === 'content' || type.of === 'file') {
             return src;
         }
 
@@ -160,19 +162,20 @@ const getDom = (src, type) => {
  */
 const run = (data) => {
     const src = typeof data.src === 'string' ? [data.src] : data.src;
+    const type = typeof data.type === 'string' ? { of: data.type } : data.type;
     let reqSrc = src;
 
     // Lets parse sources into what we're expecting
-    if (data.type === 'url') {
-        reqSrc = getReqUrls(reqSrc, data.base, data.baseEnv);
-    } else if (data.type === 'file') {
+    if (type.of === 'url') {
+        reqSrc = getReqUrls(reqSrc, type.base, type.baseEnv);
+    } else if (type.of === 'file') {
         reqSrc = reqSrc.map(val => ({ requestSrc: require(getPwd(val)), originalSrc: val }));
     } else {
         reqSrc = reqSrc.map(val => ({ requestSrc: val, originalSrc: val }));
     }
 
     // Finally lets set the promises
-    const urlsPromises = reqSrc.map((req) => getDom(req.requestSrc, data.type)
+    const urlsPromises = reqSrc.map((req) => getDom(req.requestSrc, type)
     .then((domReq) => {
         req.domReq = domReq;
         return req;

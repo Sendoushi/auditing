@@ -16,7 +16,6 @@ describe('audit.config', () => {
     describe('get', () => {
         it('should load config', () => {
             const result = fns.get('./src/_test/data/config.json');
-
             expect(result).to.be.an('object');
             expect(result).to.have.all.keys(['projectId', 'projectName', 'data']);
             expect(result.data).to.be.an('array');
@@ -24,9 +23,17 @@ describe('audit.config', () => {
 
             result.data.forEach(val => {
                 expect(val).to.contain.all.keys(['src', 'audits', 'type']);
-                expect(val).to.contain.any.keys('src', 'audits', 'base', 'baseEnv');
                 expect(val.src).to.be.an('array');
-                expect(val.type).to.be.a('string');
+
+                if (typeof val.type === 'string') {
+                    expect(val.type).to.have.length.above(1);
+                } else if (typeof val.type === 'object') {
+                    expect(val.type).to.contain.all.keys(['of']);
+                    expect(val.type).to.contain.any.keys(['of', 'base', 'baseEnv']);
+                } else {
+                    throw new Error('Expect type to be string or object');
+                }
+
                 expect(val.audits).to.be.an('array');
             });
         });
@@ -42,9 +49,17 @@ describe('audit.config', () => {
 
             result.data.forEach(val => {
                 expect(val).to.contain.all.keys(['src', 'audits', 'type']);
-                expect(val).to.contain.any.keys('src', 'audits', 'base', 'baseEnv');
                 expect(val.src).to.be.an('array');
-                expect(val.type).to.be.a('string');
+
+                if (typeof val.type === 'string') {
+                    expect(val.type).to.have.length.above(1);
+                } else if (typeof val.type === 'object') {
+                    expect(val.type).to.contain.all.keys(['of']);
+                    expect(val.type).to.contain.any.keys(['of', 'base', 'baseEnv']);
+                } else {
+                    throw new Error('Expect type to be string or object');
+                }
+
                 expect(val.audits).to.be.an('array');
             });
         });
