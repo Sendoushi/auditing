@@ -10,7 +10,7 @@ import { __testMethods__ as fns } from '../scraper.js';
 // --------------------------------
 // Suite of tests
 
-describe.only('audit.scraper', () => {
+describe('audit.scraper', () => {
     // getReqUrls
     describe('getReqUrls', () => {
         it('should get an array', () => {

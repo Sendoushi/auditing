@@ -117,7 +117,7 @@ const getDom = (src, type) => {
         // Config
         const config = {
             virtualConsole,
-            scripts: ['http://code.jquery.com/jquery.js'],
+            scripts: ['http://code.jquery.com/jquery.min.js'],
             features: {
                 FetchExternalResources: ['script', 'link'],
                 ProcessExternalResources: ['script'],

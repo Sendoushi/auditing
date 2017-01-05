@@ -76,37 +76,15 @@ const runRule = (rule = {}, src = {}, ignore = []) => {
         }
 
         // No need to go further without an array
-        if (!isArray(data.result)) {
+        if (!isArray(data.result) || !data.result[0] || typeof data.result[0] !== 'object') {
+            return data;
+        } else if (!data.result[0].status) {
             return data;
         }
 
-        // Lets check for nestedissues...
+        // Lets check for nested issues...
         let nestedError = false;
         data.result = data.result.map(val => {
-            if (!val || typeof val !== 'object') {
-                val = {
-                    msg: val.msg,
-                    result: 'Rule array result item should be an object',
-                    status: 'failed'
-                };
-            }
-
-            if (!val.status || typeof val.status !== 'string') {
-                val = {
-                    msg: val.msg,
-                    result: 'Rule array result item should have a string status',
-                    status: 'failed'
-                };
-            }
-
-            if (!val.msg || typeof val.msg !== 'string') {
-                val = {
-                    msg: '',
-                    result: 'Rule array result item should have a string msg',
-                    status: 'failed'
-                };
-            }
-
             // Lets check if we should ignore it...
             const isIgnore = contains(ignore, val.msg) || contains(ignore, val.raw);
             val.status = isIgnore ? 'ignored' : val.status;
@@ -185,7 +163,7 @@ const runAudit = (auditsData = [], src = {}, resolve, reject) => {
 
             // Lets actually run the rule
             itTest(`Rule: ${rule.name}`, function (done) {
-                this.timeout(20000);
+                this.timeout(60000);
 
                 // Lets run the rule
                 runRule(rule, src, audit.ignore)

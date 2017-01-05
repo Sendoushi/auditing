@@ -2,6 +2,7 @@
 /* global Promise */
 
 import path from 'path';
+import { getUrl } from '../scraper.js';
 
 //-------------------------------------
 // Functions
@@ -112,6 +113,137 @@ const hasCssVersion = (req) => new Promise((resolve, reject) => {
     !rejected ? resolve(true) : reject(rejected);
 });
 
+/**
+ * Check if all css is minified
+ *
+ * @param {object} req
+ * @returns promise
+ */
+const isCssMinified = (req) => new Promise((resolve, reject) => {
+    const cssPattern = /<link.*?stylesheet.*?=['|"](.+?\.css)['|"].*?>/g;
+    const markup = req.domReq.window.document.documentElement.innerHTML;
+    let links = markup.match(cssPattern);
+
+    // Lets get just the actual links
+    links = links && links.map(val => {
+        val = val.match(/href=['|"](.+)['|"]/g);
+        val = val[0].replace(/href=['|"]/g, '').replace(/['|"]/g, '');
+
+        if (!val.match(/(http[^|\s])/g)) {
+            // TODO: This won't work without a protocol... We could actually check the requestSrc
+            console.warn(`${val} isn\'t being tested with rule "isCssMinified" because it has no full route with protocol. Eventually I'll get to this issue.`);
+            return false;
+        } else if (val.match(/\.min\./g)) {
+            // No need to go further if the file actually states so
+            return false;
+        }
+
+        return val;
+    }).filter(val => !!val);
+
+    if (!links || !links.length) {
+        return resolve(true);
+    }
+
+    // Lets run all promises
+    // We need to request it now
+    const promises = links.map(val => getUrl(val).then(content => {
+        const firstParam = /} \./g.exec(content) || /.* }/g.exec(content);
+        const secondParam = /; .*/g.exec(content) || /: .*/g.exec(content);
+
+        // TODO: Improve...
+
+        if (firstParam || secondParam) {
+            throw new Error(val);
+        }
+
+        // Everything must've went fine
+        return true;
+    }));
+
+    // Run it all
+    Promise.all(promises).then(data => {
+        const dataResults = data.filter(val => val !== true);
+
+        if (dataResults.length) {
+            throw new Error(dataResults[0]);
+        }
+
+        resolve(true);
+    }).catch(reject);
+});
+
+/**
+ * Check if all js is minified
+ *
+ * @param {object} req
+ * @returns promise
+ */
+const isJsMinified = (req) => new Promise((resolve, reject) => {
+    const scriptPattern = /<script.*?src=['|"](.+?\.js)['|"].*?\/script>/g;
+    const markup = req.domReq.window.document.documentElement.innerHTML;
+    let links = markup.match(scriptPattern);
+
+    // Lets get just the actual links
+    links = links && links.map(val => {
+        val = val.match(/src=['|"](.+)['|"]/g);
+        val = val[0].replace(/src=['|"]/g, '').replace(/['|"]/g, '');
+
+        if (!val.match(/(http[^|\s])/g)) {
+            // TODO: This won't work without a protocol... We could actually check the requestSrc
+            console.warn(`${val} isn\'t being tested with rule "isJsMinified" because it has no full route with protocol. Eventually I'll get to this issue.`);
+        } else if (val.match(/\.min\./g)) {
+            // No need to go further if the file actually states so
+            return false;
+        }
+
+        return val;
+    }).filter(val => !!val);
+
+    if (!links || !links.length) {
+        return resolve(true);
+    }
+
+    // Lets run all promises
+    // We need to request it now
+    const promises = links.map(val => getUrl(val).then(content => {
+        const firstParam = /} \./g.exec(content) || /.* }/g.exec(content);
+        // These don't work with some minifiers (like for example jquery)
+        // const secondParam = /; .*/g.exec(content) || /: .*/g.exec(content);
+
+        // TODO: Improve...
+
+        if (firstParam) {
+            throw new Error(val);
+        }
+
+        // Everything must've went fine
+        return true;
+    }));
+
+    // Run it all
+    Promise.all(promises).then(data => {
+        const dataResults = data.filter(val => val !== true);
+
+        if (dataResults.length) {
+            throw new Error(dataResults[0]);
+        }
+
+        resolve(true);
+    }).catch(reject);
+});
+
+/**
+ * Check if has css prefixes
+ *
+ * @param {object} req
+ * @returns promise
+ */
+const hasCssPrefixes = () => new Promise((resolve) => {
+    // TODO: ...
+    resolve();
+});
+
 //-------------------------------------
 // Export
 
@@ -122,6 +254,9 @@ export default {
         { name: 'hasntWarns', fn: hasntWarns },
         { name: 'hasntErrors', fn: hasntErrors },
         { name: 'hasCssVersion', fn: hasCssVersion },
-        { name: 'hasJsVersion', fn: hasJsVersion }
+        { name: 'hasJsVersion', fn: hasJsVersion },
+        { name: 'isCssMinified', fn: isCssMinified },
+        { name: 'isJsMinified', fn: isJsMinified },
+        { name: 'hasCssPrefixes', fn: hasCssPrefixes }
     ]
 };

@@ -517,4 +517,268 @@ describe('audit.modules.bestPractices', () => {
             .catch(done);
         });
     });
+
+    describe('audit.modules.bestPractices.isCssMinified', () => {
+        const ruleName = 'isCssMinified';
+
+        it('should success without styles', function (done) {
+            const configObj = {
+                projectId: 'test',
+                projectName: 'Test',
+                data: [{
+                    src: ['<html><head></head><body></body></html>'],
+                    type: 'content',
+                    audits: [{
+                        src: 'bestPractices',
+                        ignore: allRules.filter(val => val !== ruleName)
+                    }]
+                }]
+            };
+
+            // We need some time for this one to be well tested...
+            this.timeout(5000);
+
+            run(configObj)
+            .then(data => {
+                const rule = data.bestPractices.filter(val => val.name === ruleName)[0];
+                expect(rule.status).to.eql('passed');
+                expect(rule.result).to.eql(true);
+
+                done();
+            })
+            .catch(done);
+        });
+
+        it('should success with a single minified style', function (done) {
+            let tmpl = '<html><head>';
+            tmpl += '<link rel="stylesheet" href="https://raw.githubusercontent.com/twbs/bootstrap/v4-dev/dist/css/bootstrap-grid.min.css">';
+            tmpl += '</head><body></body></html>';
+
+            const configObj = {
+                projectId: 'test',
+                projectName: 'Test',
+                data: [{
+                    src: [tmpl],
+                    type: 'content',
+                    audits: [{
+                        src: 'bestPractices',
+                        ignore: allRules.filter(val => val !== ruleName)
+                    }]
+                }]
+            };
+
+            // We need some time for this one to be well tested...
+            this.timeout(5000);
+
+            run(configObj)
+            .then(data => {
+                const rule = data.bestPractices.filter(val => val.name === ruleName)[0];
+                expect(rule.status).to.eql('passed');
+                expect(rule.result).to.eql(true);
+
+                done();
+            })
+            .catch(done);
+        });
+
+        it('should success with multiple minified styles', function (done) {
+            let tmpl = '<html><head>';
+            tmpl += '<link rel="stylesheet" href="https://raw.githubusercontent.com/twbs/bootstrap/v4-dev/dist/css/bootstrap-grid.min.css">';
+            tmpl += '<link rel="stylesheet" href="https://raw.githubusercontent.com/twbs/bootstrap/v4-dev/dist/css/bootstrap-reboot.min.css">';
+            tmpl += '</head><body></body></html>';
+
+            const configObj = {
+                projectId: 'test',
+                projectName: 'Test',
+                data: [{
+                    src: [tmpl],
+                    type: 'content',
+                    audits: [{
+                        src: 'bestPractices',
+                        ignore: allRules.filter(val => val !== ruleName)
+                    }]
+                }]
+            };
+
+            // We need some time for this one to be well tested...
+            this.timeout(5000);
+
+            run(configObj)
+            .then(data => {
+                const rule = data.bestPractices.filter(val => val.name === ruleName)[0];
+                expect(rule.status).to.eql('passed');
+                expect(rule.result).to.eql(true);
+
+                done();
+            })
+            .catch(done);
+        });
+
+        it('should error without minified files', function (done) {
+            let tmpl = '<html><head>';
+            tmpl += '<link rel="stylesheet" href="https://raw.githubusercontent.com/twbs/bootstrap/v4-dev/dist/css/bootstrap-grid.min.css">';
+            tmpl += '<link rel="stylesheet" href="https://raw.githubusercontent.com/twbs/bootstrap/v4-dev/dist/css/bootstrap-reboot.css">';
+            tmpl += '</head><body></body></html>';
+
+            const configObj = {
+                projectId: 'test',
+                projectName: 'Test',
+                data: [{
+                    src: [tmpl],
+                    type: 'content',
+                    audits: [{
+                        src: 'bestPractices',
+                        ignore: allRules.filter(val => val !== ruleName)
+                    }]
+                }]
+            };
+
+            // We need some time for this one to be well tested...
+            this.timeout(5000);
+
+            run(configObj)
+            .then(() => { done('It should\'ve errored'); })
+            .catch(err => {
+                const rule = err.bestPractices.filter(val => val.name === ruleName)[0];
+                expect(rule.status).to.eql('failed');
+                expect(rule.result.message).to.contain('bootstrap-reboot.css');
+
+                done();
+            });
+        });
+    });
+
+    describe('audit.modules.bestPractices.isJsMinified', () => {
+        const ruleName = 'isJsMinified';
+
+        it('should success without scripts', function (done) {
+            const configObj = {
+                projectId: 'test',
+                projectName: 'Test',
+                data: [{
+                    src: ['<html><head></head><body></body></html>'],
+                    type: 'content',
+                    audits: [{
+                        src: 'bestPractices',
+                        ignore: allRules.filter(val => val !== ruleName)
+                    }]
+                }]
+            };
+
+            // We need some time for this one to be well tested...
+            this.timeout(5000);
+
+            run(configObj)
+            .then(data => {
+                const rule = data.bestPractices.filter(val => val.name === ruleName)[0];
+                expect(rule.status).to.eql('passed');
+                expect(rule.result).to.eql(true);
+
+                done();
+            })
+            .catch(done);
+        });
+
+        it('should success with a single minified script', function (done) {
+            let tmpl = '<html><head>';
+            tmpl += '<script src="https://raw.githubusercontent.com/twbs/bootstrap/v4-dev/dist/js/bootstrap.min.js"></script>';
+            tmpl += '</head><body></body></html>';
+
+            const configObj = {
+                projectId: 'test',
+                projectName: 'Test',
+                data: [{
+                    src: [tmpl],
+                    type: 'content',
+                    audits: [{
+                        src: 'bestPractices',
+                        ignore: allRules.filter(val => val !== ruleName)
+                    }]
+                }]
+            };
+
+            // We need some time for this one to be well tested...
+            this.timeout(10000);
+
+            run(configObj)
+            .then(data => {
+                const rule = data.bestPractices.filter(val => val.name === ruleName)[0];
+                expect(rule.status).to.eql('passed');
+                expect(rule.result).to.eql(true);
+
+                done();
+            })
+            .catch(done);
+        });
+
+        it('should success with multiple minified scripts', function (done) {
+            let tmpl = '<html><head>';
+            tmpl += '<script src="https://raw.githubusercontent.com/twbs/bootstrap/v4-dev/dist/js/bootstrap.min.js"></script>';
+            tmpl += '<script src="https://code.jquery.com/jquery-2.x-git.min.js"></script>';
+            tmpl += '</head><body></body></html>';
+
+            const configObj = {
+                projectId: 'test',
+                projectName: 'Test',
+                data: [{
+                    src: [tmpl],
+                    type: 'content',
+                    audits: [{
+                        src: 'bestPractices',
+                        ignore: allRules.filter(val => val !== ruleName)
+                    }]
+                }]
+            };
+
+            // We need some time for this one to be well tested...
+            this.timeout(10000);
+
+            run(configObj)
+            .then(data => {
+                const rule = data.bestPractices.filter(val => val.name === ruleName)[0];
+                expect(rule.status).to.eql('passed');
+                expect(rule.result).to.eql(true);
+
+                done();
+            })
+            .catch(done);
+        });
+
+        it('should error without minified files', function (done) {
+            let tmpl = '<html><head>';
+            tmpl += '<script src="https://raw.githubusercontent.com/twbs/bootstrap/v4-dev/dist/js/bootstrap.js"></script>';
+            tmpl += '<script src="https://code.jquery.com/jquery-2.x-git.min.js"></script>';
+            tmpl += '</head><body></body></html>';
+
+            const configObj = {
+                projectId: 'test',
+                projectName: 'Test',
+                data: [{
+                    src: [tmpl],
+                    type: 'content',
+                    audits: [{
+                        src: 'bestPractices',
+                        ignore: allRules.filter(val => val !== ruleName)
+                    }]
+                }]
+            };
+
+            // We need some time for this one to be well tested...
+            this.timeout(10000);
+
+            run(configObj)
+            .then(() => { done('It should\'ve errored'); })
+            .catch(err => {
+                const rule = err.bestPractices.filter(val => val.name === ruleName)[0];
+                expect(rule.status).to.eql('failed');
+                expect(rule.result.message).to.contain('bootstrap.js');
+
+                done();
+            });
+        });
+    });
+
+    describe('audit.modules.bestPractices.hasCssPrefixes', () => {
+        it.skip('should work', () => {});
+    });
 });

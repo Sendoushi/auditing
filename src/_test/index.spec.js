@@ -665,68 +665,6 @@ describe('audit.index', () => {
             .catch(done);
         });
 
-        it('should error with array result item without status', (done) => {
-            fns.runRule({
-                name: 'foo',
-                fn: () => (new Promise(resolve => {
-                    resolve([{ statuo: 'passed', msg: 'Foo' }]);
-                }))
-            }, {})
-            .then(() => done('It should\'ve errored'))
-            .catch(err => {
-                expect(err).to.be.an('object');
-                expect(err).to.have.keys(['name', 'status', 'result']);
-                expect(err.name).to.be.a('string');
-                expect(err.status).to.be.a('string');
-                expect(err.status).to.eql('failed');
-                expect(err.result).to.be.an('array');
-                expect(err.result.length).to.eql(1);
-
-                err.result.forEach(result => {
-                    expect(result).to.be.an('object');
-                    expect(result).to.contain.keys(['status', 'msg', 'result']);
-                    expect(result.status).to.be.a('string');
-                    expect(result.status).to.eql('failed');
-                    expect(result.msg).to.be.a('string');
-                    expect(result.msg).to.eql('Foo');
-                    expect(result.result).to.be.a('string');
-                });
-
-                done();
-            });
-        });
-
-        it('should error with array result item without msg', (done) => {
-            fns.runRule({
-                name: 'foo',
-                fn: () => (new Promise(resolve => {
-                    resolve([{ status: 'passed', msga: 'Foo' }]);
-                }))
-            }, {})
-            .then(() => done('It should\'ve errored'))
-            .catch(err => {
-                expect(err).to.be.an('object');
-                expect(err).to.have.keys(['name', 'status', 'result']);
-                expect(err.name).to.be.a('string');
-                expect(err.status).to.be.a('string');
-                expect(err.status).to.eql('failed');
-                expect(err.result).to.be.an('array');
-                expect(err.result.length).to.eql(1);
-
-                err.result.forEach(result => {
-                    expect(result).to.be.an('object');
-                    expect(result).to.contain.keys(['status', 'msg', 'result']);
-                    expect(result.status).to.be.a('string');
-                    expect(result.status).to.eql('failed');
-                    expect(result.msg).to.be.a('string');
-                    expect(result.msg).to.be.eql('');
-                    expect(result.result).to.be.a('string');
-                });
-
-                done();
-            });
-        });
-
         it('should warn in case of status warning', (done) => {
             fns.setup(null, null, (name, msg, raw) => {
                 expect(name).to.be.a('string');
