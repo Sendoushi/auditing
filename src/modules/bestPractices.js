@@ -2,7 +2,7 @@
 /* global Promise */
 
 import path from 'path';
-import { getUrl } from '../scraper.js';
+import { getUrl } from 'mrcrowley';
 
 //-------------------------------------
 // Functions
@@ -45,7 +45,7 @@ const hasntErrors = (req) => new Promise((resolve, reject) => {
  */
 const hasJsVersion = (req) => new Promise((resolve, reject) => {
     const links = req.domReq.window.$('script');
-    const safeIgnore = ['jquery', 'cdn'];
+    const safeIgnore = ['jquery', 'cdn', 'bootstrap'];
     let rejected = false;
 
     // Lets see if one of these doesn't have versioning
@@ -83,7 +83,7 @@ const hasJsVersion = (req) => new Promise((resolve, reject) => {
  */
 const hasCssVersion = (req) => new Promise((resolve, reject) => {
     const links = req.domReq.window.$('link[rel="stylesheet"]');
-    const safeIgnore = ['jquery', 'cdn'];
+    const safeIgnore = ['jquery', 'cdn', 'bootstrap'];
     let rejected = false;
 
     // Lets see if one of these doesn't have versioning
@@ -131,7 +131,9 @@ const isCssMinified = (req) => new Promise((resolve, reject) => {
 
         if (!val.match(/(http[^|\s])/g)) {
             // TODO: This won't work without a protocol... We could actually check the requestSrc
+            /* eslint-disable no-console */
             console.warn(`${val} isn\'t being tested with rule "isCssMinified" because it has no full route with protocol. Eventually I'll get to this issue.`);
+            /* eslint-enable no-console */
             return false;
         } else if (val.match(/\.min\./g)) {
             // No need to go further if the file actually states so
@@ -191,7 +193,9 @@ const isJsMinified = (req) => new Promise((resolve, reject) => {
 
         if (!val.match(/(http[^|\s])/g)) {
             // TODO: This won't work without a protocol... We could actually check the requestSrc
+            /* eslint-disable no-console */
             console.warn(`${val} isn\'t being tested with rule "isJsMinified" because it has no full route with protocol. Eventually I'll get to this issue.`);
+            /* eslint-enable no-console */
         } else if (val.match(/\.min\./g)) {
             // No need to go further if the file actually states so
             return false;

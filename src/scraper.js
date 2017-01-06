@@ -1,54 +1,11 @@
 'use strict';
 /* global Promise */
 
-import jsdom from 'jsdom';
-import resourceLoader from 'jsdom/lib/jsdom/browser/resource-loader';
-import toughCookie from 'tough-cookie';
-import { isUrl } from './utils.js';
+import { getDom } from 'mrcrowley';
 import { getPwd } from './utils.js';
 
 //-------------------------------------
 // Functions
-
-/**
- * Gets url markup
- *
- * @param {string} url
- * @returns {promise}
- */
-const getUrl = (url) => new Promise((resolve, reject) => {
-    if (typeof url !== 'string') {
-        throw new Error('Url needs to be a string');
-    }
-
-    const options = {
-        defaultEncoding: 'windows-1252',
-        detectMetaCharset: true,
-        // headers: config.headers,
-        pool: {
-            maxSockets: 6
-        },
-        strictSSL: true,
-        // proxy: config.proxy,
-        cookieJar: new toughCookie.CookieJar(null, { looseMode: true }),
-        userAgent: `Node.js (${process.platform}; U; rv:${process.version}) AppleWebKit/537.36 (KHTML, like Gecko)`,
-        // agent: config.agent,
-        // agentClass: config.agentClass,
-        agentOptions: {
-            keepAlive: true,
-            keepAliveMsecs: 115 * 1000
-        }
-    };
-
-    // Finally download it!
-    resourceLoader.download(url, options, (err, responseText) => {
-        if (err) {
-            return reject(err);
-        }
-
-        resolve(responseText);
-    });
-});
 
 /**
  * Get request urls
@@ -85,58 +42,6 @@ const getReqUrls = (urls, base, baseEnv) => {
 };
 
 /**
- * Gets DOM from url
- *
- * @param {string} src
- * @param {string|object} type
- * @returns {promise}
- */
-const getDom = (src, type) => {
-    type = typeof type === 'string' ? { of: type } : type;
-
-    const promise = new Promise((resolve, reject) => {
-        // Need to check if url is ok
-        if (type.of === 'url' && !isUrl(src)) {
-            return reject(new Error('Url not valid'));
-        }
-
-        resolve(src);
-    })
-    .then(retrieveSrc => new Promise((resolve, reject) => {
-        // Prepare for possible errors
-        const virtualConsole = jsdom.createVirtualConsole();
-        const errors = [];
-        const logs = [];
-        const warns = [];
-
-        virtualConsole.on('jsdomError', error => { errors.push(error); });
-        virtualConsole.on('error', error => { errors.push(error); });
-        virtualConsole.on('log', log => { logs.push(log); });
-        virtualConsole.on('warn', warn => { warns.push(warn); });
-
-        // Config
-        const config = {
-            virtualConsole,
-            scripts: ['http://code.jquery.com/jquery.min.js'],
-            features: {
-                FetchExternalResources: ['script', 'link'],
-                ProcessExternalResources: ['script'],
-                SkipExternalResources: false
-            },
-            done: (err, window) => {
-                if (err) { return reject(err); }
-                resolve({ window, errors, logs, warns });
-            }
-        };
-
-        // Now for the actual getting
-        jsdom.env(retrieveSrc, config);
-    }));
-
-    return promise;
-};
-
-/**
  * Scrapes
  *
  * @param  {object} data
@@ -157,7 +62,7 @@ const run = (data) => {
     }
 
     // Finally lets set the promises
-    const urlsPromises = reqSrc.map((req) => getDom(req.requestSrc, type)
+    const urlsPromises = reqSrc.map((req) => getDom(req.requestSrc, type.of)
     .then((domReq) => {
         req.domReq = domReq;
         return req;
@@ -174,8 +79,6 @@ const run = (data) => {
 // Export
 
 export { run };
-export { getDom };
-export { getUrl };
 
 // Essentially for testing purposes
-export const __testMethods__ = { run, getDom, getReqUrls, getUrl };
+export const __testMethods__ = { run, getReqUrls };

@@ -47,9 +47,6 @@ node <mocha_path> <auditing> --mocha=true --config=<config_src>
 
 ```sh
 node ./node_modules/mocha/bin/mocha ./node_modules/auditing/dist/index.js --mocha=true --config=".audit.json"
-
-# Or for ES6... You will need babel-core in the dependencies and ES2015 preset setup in your .babelrc
-node ./node_modules/mocha/bin/mocha ./node_modules/auditing/src/index.js --compilers js:babel-core/register --mocha=true --config=".audit.json"
 ```
 
 -------------------
@@ -62,23 +59,26 @@ node ./node_modules/mocha/bin/mocha ./node_modules/auditing/src/index.js --compi
     "projectName": "<project_name>",
     "data": [{
         "src": ["<url_path>", "<content|markup>", "<file>"],
-        // Type should reflect the src type
         "type": "url|content|file",
-        // Type can also be an object
         "type": {
             "of": "url",
-            // base and baseEnv are options only available for type url
             "base": "<optional_url_base_path>",
             "baseEnv": "<optional_env_var_to_set_base_upon>"
         },
         "audits": ["<path_to_custom>", {
             "src": "<path_to_custom>",
-            // Ignore rules and nested messages with ignore
             "ignore": ["<pattern_to_ignore>"]
         }]
     }]
 }
 ```
+
+**Notes:**
+
+- `type`: It can be an `object` or a `string`
+- `base`: Option only available for type url. Optional key
+- `baseEnv`: Option only available for type url. Optional key
+- `ignore`: Ignore rules and nested messages with ignore
 
 ### Examples
 Go under the [src/_test/data](src/_test/data) folder and check the `*.json`.
