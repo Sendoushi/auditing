@@ -34,14 +34,12 @@ Any kind of path should be absolute or relative to the place the script is calle
 
 ```sh
 node <mocha_path> <auditing> --mocha=true --config=<config_src>
-
-# Pass the path to mocha. For example node_modules/mocha/bin/mocha.
-# You could simply use mocha instead if you have it globally or if you're using npm scripts.
-<mocha_path>
-
-# Set the path for the auditing main index.js file.
-<auditing>
 ```
+
+**Notes:**
+- `<mocha_path>`: Pass the path to mocha. For example `node_modules/mocha/bin/mocha`. You could simply use `mocha` instead if you have it globally or if you're using `npm scripts`. It is required
+- `<auditing>`: Set the path for the auditing main index.js file. It is required
+- `<config_json_src>`: Path to the config json for crawling. It is required
 
 ##### Example
 
@@ -65,6 +63,8 @@ node ./node_modules/mocha/bin/mocha ./node_modules/auditing/dist/index.js --moch
             "base": "<optional_url_base_path>",
             "baseEnv": "<optional_env_var_to_set_base_upon>"
         },
+        "enableJs": false,
+        "waitFor" : "<html_selector>",
         "audits": ["<path_to_custom>", {
             "src": "<path_to_custom>",
             "ignore": ["<pattern_to_ignore>"]
@@ -76,6 +76,8 @@ node ./node_modules/mocha/bin/mocha ./node_modules/auditing/dist/index.js --moch
 **Notes:**
 
 - `type`: It can be an `object` or a `string`
+- `enableJs`: Javascript isn't enable by default for security reasons. Use this if you really need it
+- `waitFor`: Usually used with `enableJs`. If the sources uses javascript to render, you may `waitFor` the selector to be present. It will only wait `20` seconds
 - `base`: Option only available for type url. Optional key
 - `baseEnv`: Option only available for type url. Optional key
 - `ignore`: Ignore rules and nested messages with ignore

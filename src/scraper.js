@@ -62,15 +62,19 @@ const run = (data) => {
     }
 
     // Finally lets set the promises
-    const urlsPromises = reqSrc.map((req) => getDom(req.requestSrc, type.of)
-    .then((domReq) => {
-        req.domReq = domReq;
-        return req;
-    })
-    .catch((err) => {
-        req.err = err;
-        throw req;
-    }));
+    const urlsPromises = reqSrc.map((req) => {
+        const promise = getDom(req.requestSrc, type.of, null, data.enableJs, data.waitFor);
+
+        return promise
+        .then((domReq) => {
+            req.domReq = domReq;
+            return req;
+        })
+        .catch((err) => {
+            req.err = err;
+            throw req;
+        });
+    });
 
     return Promise.all(urlsPromises);
 };

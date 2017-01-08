@@ -16,6 +16,8 @@ const STRUCT = Joi.object().keys({
                 baseEnv: Joi.string()
             })
         ),
+        enableJs: Joi.boolean().default(false),
+        waitFor: Joi.string(),
         audits: Joi.array().items(Joi.alternatives().try(
             Joi.string(),
             Joi.object().keys({
@@ -23,7 +25,7 @@ const STRUCT = Joi.object().keys({
                 ignore: Joi.array().items(Joi.string())
             })
         ))
-    })).default([])
+    })).required()
 }).required();
 
 //-------------------------------------
@@ -75,4 +77,4 @@ const get = (config) => {
 export { get };
 
 // Essentially for testing purposes
-export const __testMethods__ = { get };
+export const __testMethods__ = { get, verify };

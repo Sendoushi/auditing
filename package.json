@@ -1,6 +1,6 @@
 {
   "name": "auditing",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Set the audits once and just run the tests",
   "repository": {
     "type": "git",
@@ -17,7 +17,7 @@
     "clean": "rm -rf dist/*",
     "test": "npm run eslint && npm run mocha",
     "eslint": "eslint ./src/**/*.js",
-    "mocha": "BABEL_ENV=test mocha ./src/**/*.spec.js ./src/**/**/*.spec.js --compilers js:babel-core/register",
+    "mocha": "BABEL_ENV=test mocha ./src/**/*.spec.js ./src/**/**/*.spec.js --bail --compilers js:babel-core/register",
     "prebuild": "npm run clean && npm run test",
     "build": "BABEL_ENV=production babel src --out-dir dist --source-maps inline --ignore *.spec.js,_test/**/*",
     "prepublish": "npm run test",
@@ -40,7 +40,7 @@
     "joi": "^9.2.0",
     "lighthouse": "^1.2.2",
     "lodash": "^4.17.4",
-    "mrcrowley": "0.0.1",
+    "mrcrowley": "0.0.2",
     "w3cjs": "^0.3.0",
     "yargs": "^6.3.0"
   },

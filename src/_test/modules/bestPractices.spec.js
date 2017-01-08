@@ -24,6 +24,7 @@ describe('audit.modules.bestPractices', () => {
                 data: [{
                     src: ['<html><head></head><body></body></html>'],
                     type: 'content',
+                    enableJs: true,
                     audits: [{
                         src: 'bestPractices',
                         ignore: allRules.filter(val => val !== ruleName)
@@ -52,6 +53,7 @@ describe('audit.modules.bestPractices', () => {
                 data: [{
                     src: ['<html><head></head><body><script>console.log("foo");</script></body></html>'],
                     type: 'content',
+                    enableJs: true,
                     audits: [{
                         src: 'bestPractices',
                         ignore: allRules.filter(val => val !== ruleName)
@@ -86,6 +88,7 @@ describe('audit.modules.bestPractices', () => {
                 data: [{
                     src: ['<html><head></head><body></body></html>'],
                     type: 'content',
+                    enableJs: true,
                     audits: [{
                         src: 'bestPractices',
                         ignore: allRules.filter(val => val !== ruleName)
@@ -114,6 +117,7 @@ describe('audit.modules.bestPractices', () => {
                 data: [{
                     src: ['<html><head></head><body><script>console.warn("foo");</script></body></html>'],
                     type: 'content',
+                    enableJs: true,
                     audits: [{
                         src: 'bestPractices',
                         ignore: allRules.filter(val => val !== ruleName)
@@ -148,6 +152,7 @@ describe('audit.modules.bestPractices', () => {
                 data: [{
                     src: ['<html><head></head><body></body></html>'],
                     type: 'content',
+                    enableJs: true,
                     audits: [{
                         src: 'bestPractices',
                         ignore: allRules.filter(val => val !== ruleName)
@@ -176,6 +181,7 @@ describe('audit.modules.bestPractices', () => {
                 data: [{
                     src: ['<html><head></head><body><script>console.error("foo");</script></body></html>'],
                     type: 'content',
+                    enableJs: true,
                     audits: [{
                         src: 'bestPractices',
                         ignore: allRules.filter(val => val !== ruleName)
@@ -206,6 +212,7 @@ describe('audit.modules.bestPractices', () => {
                 data: [{
                     src: ['<html><head></head><body><script>throw new Error("foo");</script></body></html>'],
                     type: 'content',
+                    enableJs: true,
                     audits: [{
                         src: 'bestPractices',
                         ignore: allRules.filter(val => val !== ruleName)
