@@ -64,7 +64,7 @@ describe('audit.index', () => {
             const configSrc = './src/_test/data/config_basic.json';
 
             // We need some time for this one to be well tested...
-            this.timeout(20000);
+            this.timeout(40000);
 
             fns.run(configSrc)
             .then(data => {
@@ -89,7 +89,7 @@ describe('audit.index', () => {
             const configObj = require('./data/config_basic.json');
 
             // We need some time for this one to be well tested...
-            this.timeout(20000);
+            this.timeout(40000);
 
             fns.run(configObj)
             .then(data => {
@@ -127,7 +127,7 @@ describe('audit.index', () => {
             }];
 
             // We need some time for this one to be well tested...
-            this.timeout(20000);
+            this.timeout(40000);
 
             fns.gatherData(config)
             .then((data) => {

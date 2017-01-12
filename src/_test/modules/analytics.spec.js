@@ -41,7 +41,7 @@ describe('audit.modules.analytics', () => {
             };
 
             // We need some time for this one to be well tested...
-            this.timeout(5000);
+            this.timeout(20000);
 
             run(configObj)
             .then(data => {
@@ -77,7 +77,7 @@ describe('audit.modules.analytics', () => {
             };
 
             // We need some time for this one to be well tested...
-            this.timeout(5000);
+            this.timeout(20000);
 
             run(configObj)
             .then(data => {
@@ -105,7 +105,7 @@ describe('audit.modules.analytics', () => {
             };
 
             // We need some time for this one to be well tested...
-            this.timeout(5000);
+            this.timeout(20000);
 
             run(configObj)
             .then(() => { done('It should\'ve errored'); })

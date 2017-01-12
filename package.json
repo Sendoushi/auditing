@@ -1,6 +1,6 @@
 {
   "name": "auditing",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Set the audits once and just run the tests",
   "repository": {
     "type": "git",
@@ -40,7 +40,7 @@
     "joi": "^9.2.0",
     "lighthouse": "^1.2.2",
     "lodash": "^4.17.4",
-    "mrcrowley": "0.0.4",
+    "mrcrowley": "0.0.7",
     "w3cjs": "^0.3.0",
     "yargs": "^6.3.0"
   },
